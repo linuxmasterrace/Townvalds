@@ -4,20 +4,29 @@ function Initialize(Plugin)
 	PLUGIN = Plugin
 	PLUGIN:SetName("Townvalds")
 	PLUGIN:SetVersion(1)
-	
+
 	-- Load the Info shared library:
 	dofile(cPluginManager:GetPluginsPath() .. "/InfoReg.lua")
-	
+
 	--Bind all the commands:
-	RegisterPluginInfoCommands();
+	RegisterPluginInfoCommands()
+	RegisterPluginInfoConsoleCommands()
 
-	-- Hooks
-	
-		-- cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_MOVING, OnPlayerMoving) -- Hook example, calls OnPlayerMoving
+	-- cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_MOVING, OnPlayerMoving) -- Hook example, calls OnPlayerMoving
 
-	-- Command Bindings are not necessary, are now done in Info.Lua
+	if not (cFile:IsFile(PLUGIN:GetLocalFolder() .. "/database.sqlite3")) then -- If true, means database is deleted, or the plugin runs for the first time
+		LOG("[Townvalds] It seems like this is the first time running this plugin. Creating database...")
+		CreateDatabase()
+	end
 
 	LOG("[Townvalds] Initialised " .. PLUGIN:GetName() .. " v." .. PLUGIN:GetVersion())
+
+	db = sqlite3.open(PLUGIN:GetLocalFolder() .. "/database.sqlite3")
+	stmt = db:prepare("SELECT name FROM test")
+	stmt:step()
+	data = stmt:rows()
+	LOG(data)
+	--LOG(data[1] .. " " .. data[2])
 	return true
 end
 

@@ -8,10 +8,14 @@ function DisplayVersion(Split, Player)
 		Player:SendMessage("Usage: /townvalds (option) [argument]")
 		return true
 	end
-	
+
 	if(Split[2] == "version") then
-		Player:SendMessageInfo("Townvalds version: " .. PLUGIN:GetVersion())
+		if not (Player == nil) then
+			Player:SendMessageInfo("Townvalds version: " .. PLUGIN:GetVersion())
+		else
+			LOG("Townvalds version: " .. PLUGIN:GetVersion())
+		end
 	end
-	
+
 	return true
 end
