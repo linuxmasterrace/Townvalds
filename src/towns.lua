@@ -14,18 +14,18 @@ function TownCreate(Split, Player)
     end
 
     -- Insert the town data in the database
-    local sql = "INSERT INTO towns (town_name, town_owner) VALUES (?, ?)"
-    local parameters = {Split[3], UUID}
-    local town_id = ExecuteStatement(sql, parameters)
+    local sql = "INSERT INTO towns (town_name, town_owner) VALUES (?, ?)";
+    local parameters = {Split[3], UUID};
+    local town_id = ExecuteStatement(sql, parameters);
 
     local townBaseChunk = {Player:GetChunkX(), Player:GetChunkZ()}
 
-    local sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)"
+    local sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)";
     local parameters = {town_id, townBaseChunk[1], townBaseChunk[2]}
 
-    ExecuteStatement(sql, parameters)
+    ExecuteStatement(sql, parameters);
 
-    Player:SendMessageSuccess("Created a new town!")
+    Player:SendMessageSuccess("Created a new town!");
 
     return true
 end

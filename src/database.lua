@@ -18,7 +18,6 @@ function ExecuteStatement(sql, parameters)
 			stmt:bind(key, value);
 		end
 		--stmt:bind_names(parameters);
-		--stmt:step();
 	end
 
 	local result = {};
@@ -28,14 +27,15 @@ function ExecuteStatement(sql, parameters)
 			result[x] = stmt:get_values();
 			x = x + 1;
 		end
-	elseif (sql:match("INSERT")) then
-		--result = stmt:last_insert_rowid();
-		LOG("INSERT");
 	else
-		LOG("NOTHING");
+		stmt:step();
 	end
 
 	stmt:finalize();
+
+	if (sql:match("INSERT")) then
+		result = db:last_insert_rowid();
+	end
 
 	db:close();
 
