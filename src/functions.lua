@@ -1,6 +1,7 @@
 function OnPlayerJoined(Player)
-	playerChunkX = Player:GetChunkX()
-	playerChunkZ = Player:GetChunkZ()
+	playerChunkX = Player:GetChunkX();
+	playerChunkZ = Player:GetChunkZ();
+	local inTown = false;
 end
 
 function DisplayVersion(Split, Player)
@@ -37,18 +38,13 @@ function OnPlayerMoving(Player, OldPosition, NewPosition)
 		--sql = "SELECT chunkX FROM townChunks WHERE town_id = 1";
 		--result = ExecuteStatement(sql);
 
-		if not (result == 0) then
-				if not (result[1] == nil) then
-					if not (inTown == true) then
-						Player:SendMessage("You're in the town " .. result[1][1]);
-						inTown = true;
-					end
-				else
-					inTown = false;
-				end
+		if not (result[1] == nil) then
+			if not (inTown == true) then
+				Player:SendMessage("You're in the town " .. result[1][1]);
+				inTown = true;
+			end
 		else
 			inTown = false;
-			LOG("NOT IN TOWN");
 		end
 	end
 
