@@ -3,6 +3,7 @@ function CreateDatabase()
 	local sqlCreate = {};
 	sqlCreate[1] = "CREATE TABLE IF NOT EXISTS towns (town_id INTEGER PRIMARY KEY, town_name STRING, town_owner STRING)";
 	sqlCreate[2] = "CREATE TABLE IF NOT EXISTS townChunks (townChunk_id INTEGER PRIMARY KEY, town_id INTEGER, chunkX INTEGER, chunkZ INTEGER)";
+	sqlCreate[3] = "CREATE TABLE IF NOT EXISTS users (user_guid STRING PRIMARY KEY, town_id INTEGER)";
 
 	for key in pairs(sqlCreate) do
 		ExecuteStatement(sqlCreate[key]);
@@ -12,12 +13,12 @@ end
 function ExecuteStatement(sql, parameters)
 	local db = sqlite3.open(PLUGIN:GetLocalFolder() .. "/database.sqlite3");
 	local stmt = db:prepare(sql);
+	local result;
 
 	if not (parameters == nil) then
 		for key, value in pairs(parameters) do
 			stmt:bind(key, value);
 		end
-		--stmt:bind_names(parameters);
 	end
 
 	local result = {};
