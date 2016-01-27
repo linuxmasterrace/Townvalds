@@ -48,6 +48,7 @@ function OnPlayerMoving(Player, OldPosition, NewPosition)
 				inTown = true;
 			end
 		else
+			print(inTown);
 			inTown = false;
 		end
 	end
