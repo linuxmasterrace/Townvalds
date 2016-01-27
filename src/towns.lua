@@ -1,19 +1,19 @@
 function TownCreate(Split, Player)
     -- Check if the player entered a name for the town
     if (Split[3] == nil) then
-        Player:SendMessageFailure("You have to enter a town name! Usage: /town new (name)")
-        return true
+        Player:SendMessageFailure("You have to enter a town name! Usage: /town new (name)");
+        return true;
     end
 
     -- Retrieve the player UUID from Mojang of the player that invoked the command
-    local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true)
+    local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
 
     if (UUID == "") then
-        Player:SendMessageFailure("Invalid player!")
-        return true
+        Player:SendMessageFailure("Invalid player!");
+        return true;
     end
 
-    sql = "SELECT town_id FROM users WHERE user_guid = ?";
+    sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
     parameters = {UUID}
     local result = ExecuteStatement(sql, parameters);
 
@@ -49,7 +49,7 @@ end
 
 function TownClaim(Split, Player)
     -- Get the town of the player
-    sql = "SELECT town_id FROM users WHERE user_guid = ?";
+    sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
     parameters = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true)}
     local town_id = ExecuteStatement(sql, parameters)[1][1];
 
@@ -63,7 +63,7 @@ function TownClaim(Split, Player)
             parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()}
             ExecuteStatement(sql, parameters);
 
-            Player:SendMessageSuccess("You claimed the land");
+            Player:SendMessageSuccess("Land claimed");
         else
             Player:SendMessageFailure("This chunk already belongs to a different town");
         end
