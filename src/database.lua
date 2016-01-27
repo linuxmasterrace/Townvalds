@@ -3,7 +3,7 @@ function CreateDatabase()
 	local sqlCreate = {};
 	sqlCreate[1] = "CREATE TABLE IF NOT EXISTS towns (town_id INTEGER PRIMARY KEY, town_name STRING, town_owner STRING)";
 	sqlCreate[2] = "CREATE TABLE IF NOT EXISTS townChunks (townChunk_id INTEGER PRIMARY KEY, town_id INTEGER, chunkX INTEGER, chunkZ INTEGER)";
-	sqlCreate[3] = "CREATE TABLE IF NOT EXISTS users (user_guid STRING PRIMARY KEY, town_id INTEGER)";
+	sqlCreate[3] = "CREATE TABLE IF NOT EXISTS residents (player_uuid STRING, player_name STRING, town_id INTEGER, town_rank STRING, last_online INTEGER)";
 
 	for key in pairs(sqlCreate) do
 		ExecuteStatement(sqlCreate[key]);

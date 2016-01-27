@@ -14,8 +14,8 @@ function TownCreate(Split, Player)
     end
 
     sql = "SELECT town_id FROM users WHERE user_guid = ?";
-	parameters = {UUID}
-	local result = ExecuteStatement(sql, parameters);
+    parameters = {UUID}
+    local result = ExecuteStatement(sql, parameters);
 
     if(result[1][1] == nil) then
         sql = "SELECT town_name FROM towns WHERE town_name = ?";
@@ -32,8 +32,8 @@ function TownCreate(Split, Player)
             parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()}
             ExecuteStatement(sql, parameters);
 
-            sql = "UPDATE users SET town_id = ? WHERE user_guid = ?";
-            parameters = {town_id, UUID}
+            local sql = "UPDATE residents SET town_id = ? WHERE player_uuid = ?";
+            local parameters = {town_id, UUID}
             ExecuteStatement(sql, parameters);
 
             Player:SendMessageSuccess("Created a new town called " .. Split[3]);

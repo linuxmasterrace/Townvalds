@@ -4,15 +4,10 @@ function OnPlayerJoined(Player)
 
 	local inTown = false;
 
-	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
-	local sql = "SELECT user_guid FROM users WHERE user_guid = ?";
-	local parameters = {UUID}
-	result = ExecuteStatement(sql, parameters)[1];
-
-	if(result == nil) then
-		sql = "INSERT INTO users (user_guid) VALUES(?)";
-		parameters = {UUID}
-		ExecuteStatement(sql, parameters);
+	local sql = "INSERT OR IGNORE INTO residents (player_uuid, player_name, town_id, town_rank, last_online) VALUES (?, ?, NULL, NULL, datetime(\"now\"))";
+	local parameters = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true), Player:GetName()};
+	if(ExecuteStatement(sql, parameters)==nil) then
+		LOG("Couldn't add player "..Player:GetName().." to the database!!!")
 	end
 end
 
@@ -25,13 +20,6 @@ function DisplayVersion(Split, Player)
 
 	return true
 end
-
---function OnPlayerBreakingBlock(Player, BlockType)
---	playerChunkX = Player:GetChunkX()
---	playerChunkZ = Player:GetChunkZ()
-
---	CheckLocation(playerChunkX, playerChunkZ)
---end
 
 function OnPlayerMoving(Player, OldPosition, NewPosition)
 	if not (playerChunkX == Player:GetChunkX() and playerChunkZ == Player:GetChunkZ()) then

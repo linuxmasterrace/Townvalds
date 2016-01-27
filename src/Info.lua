@@ -42,6 +42,12 @@ g_PluginInfo =
 					Permission = "townvalds.town.claim",
 				}
 			}
+		},
+		["/resident"] =
+		{
+			Handler = DisplayResident,
+			HelpString = "Displays information about resident",
+			Permission = "townvalds.resident.info",
 		}
 	},
 	ConsoleCommands =
@@ -70,6 +76,16 @@ g_PluginInfo =
 		{
 			Description = "Allows the player to view the version of the plugin",
 			RecommendedGroups = "admins, mods",
+		},
+		["townvalds.database"] =
+		{
+			Description = "Database test",
+			RecommendedGroups = "admins",
+		},
+		["townvalds.resident.info"] =
+		{
+			Description = "Allows the player to view information about a resident",
+			RecommendedGroups = "default",
 		},
 	},
 }
