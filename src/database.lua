@@ -13,12 +13,12 @@ end
 function ExecuteStatement(sql, parameters)
 	local db = sqlite3.open(PLUGIN:GetLocalFolder() .. "/database.sqlite3");
 	local stmt = db:prepare(sql);
+	local result;
 
 	if not (parameters == nil) then
 		for key, value in pairs(parameters) do
 			stmt:bind(key, value);
 		end
-		--stmt:bind_names(parameters);
 	end
 
 	local result = {};

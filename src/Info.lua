@@ -23,12 +23,6 @@ g_PluginInfo =
 					HelpString = "Displays the current plugin version to the player",
 					Permission = "townvalds.version",
 				},
-				database =
-				{
-					Handler = DatabaseTest,
-					HelpString = "townvalds.database",
-					Permission = "townvalds.database",
-				},
 			},
 		},
 		["/town"] =
@@ -40,6 +34,12 @@ g_PluginInfo =
 					Handler = TownCreate,
 					HelpString = "Creates a new town on the current location",
 					Permission = "townvalds.town.new",
+				},
+				claim =
+				{
+					Handler = TownClaim,
+					HelpString = "Claims a chunk for the current town",
+					Permission = "townvalds.town.claim",
 				}
 			}
 		},
@@ -64,7 +64,7 @@ g_PluginInfo =
 				},
 				database =
 				{
-					Handler = DatabaseTest,
+					Handler = CreateTable,
 					HelpString = "townvalds.database",
 				},
 			},
@@ -87,6 +87,5 @@ g_PluginInfo =
 			Description = "Allows the player to view information about a resident",
 			RecommendedGroups = "default",
 		},
-
 	},
 }
