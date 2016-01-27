@@ -25,6 +25,10 @@ function TownCreate(Split, Player)
 
     ExecuteStatement(sql, parameters);
 
+	local sql = "UPDATE residents SET town_id = ? WHERE player_uuid = ?";
+    local parameters = {town_id, UUID}
+	ExecuteStatement(sql, parameters);
+
     Player:SendMessageSuccess("Created a new town!");
 
     return true
