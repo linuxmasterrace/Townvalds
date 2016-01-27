@@ -3,8 +3,8 @@ function OnPlayerJoined(Player)
 	playerChunkZ = Player:GetChunkZ();
 	local inTown = false;
 	local sql = "INSERT OR IGNORE INTO residents (player_uuid, player_name, town_id, town_rank, last_online) VALUES (?, ?, NULL, NULL, datetime(\"now\"))";
-    local parameters = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true), Player:GetName()};
-    if(ExecuteStatement(sql, parameters)==nil) then
+    	local parameters = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true), Player:GetName()};
+    	if(ExecuteStatement(sql, parameters)==nil) then
 	   LOG("Couldn't add player "..Player:GetName().." to the database!!!")
 	end
 end
