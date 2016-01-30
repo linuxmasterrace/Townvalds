@@ -17,7 +17,7 @@ function TownCreate(Split, Player)
     parameters = {UUID}
     local result = ExecuteStatement(sql, parameters);
 
-    if(result[1][1] == nil) then
+    if not (result[1] and result[1][1]) then
         sql = "SELECT town_name FROM towns WHERE town_name = ?";
         parameters = {Split[3]}
         local result = ExecuteStatement(sql, parameters);
