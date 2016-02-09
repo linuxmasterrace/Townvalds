@@ -11,7 +11,6 @@ function CreateDatabase()
 end
 
 function ExecuteStatement(sql, parameters)
-	local db = sqlite3.open(PLUGIN:GetLocalFolder() .. "/database.sqlite3");
 	local stmt = db:prepare(sql);
 	local result;
 
@@ -37,8 +36,6 @@ function ExecuteStatement(sql, parameters)
 	if (sql:match("INSERT")) then
 		result = db:last_insert_rowid();
 	end
-
-	db:close();
 
 	if not (result == nil) then
 		return result;

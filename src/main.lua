@@ -25,9 +25,12 @@ function Initialize(Plugin)
 		CreateDatabase();
 	end
 
+    db = sqlite3.open(PLUGIN:GetLocalFolder() .. "/database.sqlite3");
+
 	return true;
 end
 
 function OnDisable() -- Gets called when the plugin is unloaded, mostly when shutting down the server
-	LOG("Disabled " .. PLUGIN:GetName() .. "!");
+   LOG("[" .. PLUGIN:GetName() .. "] Disabling " .. PLUGIN:GetName() .. " v" .. PLUGIN:GetVersion());
+   db:close();
 end
