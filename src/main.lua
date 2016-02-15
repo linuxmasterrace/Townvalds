@@ -24,7 +24,7 @@ function Initialize(Plugin)
 
     LoadConfig();
 
-	if not (cFile:IsFile(PLUGIN:GetLocalFolder() .. "/database.sqlite3")) then -- If true, means database is deleted, or the plugin runs for the first time
+	if not (cFile:IsFile(PLUGIN:GetLocalFolder() .. cFile:GetPathSeparator() .. config.dbname)) then -- If true, means database is deleted, or the plugin runs for the first time
        LOG("[" .. PLUGIN:GetName() .. "] It looks like this is the first time running this plugin. Creating database...")
        db = sqlite3.open(PLUGIN:GetLocalFolder() .. cFile:GetPathSeparator() .. config.dbname);
        CreateDatabase()
