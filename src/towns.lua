@@ -6,21 +6,12 @@ function TownCreate(Split, Player)
     end
 
     -- Retrieve the player UUID from Mojang of the player that invoked the command
-    local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+    local result = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
 
-    if (UUID == "") then
-        Player:SendMessageFailure("Invalid player!");
-        return true;
-    end
-
-    sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
-    parameters = {UUID}
-    local result = ExecuteStatement(sql, parameters);
-
-    if not (result[1] and result[1][1]) then
+    if not (result == nil) then
         sql = "SELECT town_name FROM towns WHERE town_name = ?";
-        parameters = {Split[3]}
-        local result = ExecuteStatement(sql, parameters);
+        parameter = {Split[3]};
+        local result = ExecuteStatement(sql, parameter);
 
         if(result[1] == nil) then
             -- Insert the town data in the database
@@ -29,11 +20,11 @@ function TownCreate(Split, Player)
             local town_id = ExecuteStatement(sql, parameters);
 
             sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)";
-            parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()}
+            parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()};
             ExecuteStatement(sql, parameters);
 
             local sql = "UPDATE residents SET town_id = ? WHERE player_uuid = ?";
-            local parameters = {town_id, UUID}
+            local parameters = {town_id, UUID};
             ExecuteStatement(sql, parameters);
 
             Player:SendMessageSuccess("Created a new town called " .. Split[3]);
@@ -50,13 +41,11 @@ end
 function TownClaim(Split, Player)
     if(InTown[Player:GetName()] == nil) then
         -- Get the town of the player
-        sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
-        parameters = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true)}
-        local town_id = ExecuteStatement(sql, parameters)[1][1];
+        local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
 
         if not(town_id == nil) then
             sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
-            parameters = {Player:GetChunkX(), Player:GetChunkZ()}
+            parameters = {Player:GetChunkX(), Player:GetChunkZ()};
             local result = ExecuteStatement(sql, parameters);
 
             if not (result[1] == town_id) then
@@ -66,7 +55,7 @@ function TownClaim(Split, Player)
 
                 if not (result == nil) then -- The chunk to be claimed is next to an already existing chunk of the town
                     sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)";
-                    parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()}
+                    parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()};
                     ExecuteStatement(sql, parameters);
 
                     Player:SendMessageSuccess("Land succesfully claimed");
@@ -84,4 +73,28 @@ function TownClaim(Split, Player)
         Player:SendMessageFailure("You can't claim land that is already part of a town!");
     end
         return true;
+end
+
+function TownUnclaim(Split, Player)
+    if not (InTown[Player:GetName()] == nil) then
+        local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
+
+        sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
+        parameters = {Player:GetChunkX(), Player:GetChunkZ()};
+        local result = ExecuteStatement(sql, parameters)[1][1];
+
+        if(town_id == result) then
+            sql = "DELETE FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ?";
+            parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()};
+            ExecuteStatement(sql, parameters);
+
+            Player:SendMessageSuccess("Land succesfully unclaimed.");
+        else
+            Player:SendMessageFailure("This is not your town!");
+        end
+    else
+        Player:SendMessageFailure("You can't unclaim land if you're not in a town!");
+    end
+
+    return true;
 end

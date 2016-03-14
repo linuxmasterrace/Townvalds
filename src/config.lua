@@ -7,15 +7,17 @@ function LoadConfig()
    ini:AddHeaderComment("Configuration for Townvalds");
 
    if not (ini:FindKey("General")) then
-      ini:AddKeyName("General")
+      ini:AddKeyName("General");
    end
    ini:DeleteKeyComments("General");
    ini:AddKeyComment("General", "dbname - Filename of the database. REQUIRES PLUGIN RELOAD");
-   
+
    newconfig.dbname = ini:GetValueSet("General", "dbname", "database.sqlite3");
-   
+
    ini:WriteFile(PLUGIN:GetLocalFolder() .. "/config.ini");
    config = newconfig;
+
+   LOG("[Townvalds] Config succesfully reloaded");
 
    return true;
 end

@@ -32,6 +32,14 @@ function CheckBlockPermission(Player, BlockX, BlockZ)
     end
 end
 
+function GetPlayerTown(UUID)
+    sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
+    parameters = {UUID}
+    local town_id = ExecuteStatement(sql, parameters)[1][1];
+
+    return town_id;
+end
+
 function OnPlayerJoined(Player)
     local sql = "INSERT OR IGNORE INTO residents (player_uuid, player_name, town_id, town_rank, last_online) VALUES (?, ?, NULL, NULL, datetime(\"now\"))";
     local parameters = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true), Player:GetName()};
