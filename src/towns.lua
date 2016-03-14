@@ -48,27 +48,40 @@ function TownCreate(Split, Player)
 end
 
 function TownClaim(Split, Player)
-    -- Get the town of the player
-    sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
-    parameters = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true)}
-    local town_id = ExecuteStatement(sql, parameters)[1][1];
+    if(InTown[Player:GetName()] == nil) then
+        -- Get the town of the player
+        sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
+        parameters = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true)}
+        local town_id = ExecuteStatement(sql, parameters)[1][1];
 
-    if not(town_id == nil) then
-        sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
-        parameters = {Player:GetChunkX(), Player:GetChunkZ()}
-        local result = ExecuteStatement(sql, parameters);
+        if not(town_id == nil) then
+            sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
+            parameters = {Player:GetChunkX(), Player:GetChunkZ()}
+            local result = ExecuteStatement(sql, parameters);
 
-        if not (result[1] == town_id) then
-            sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)";
-            parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()}
-            ExecuteStatement(sql, parameters);
+            if not (result[1] == town_id) then
+                sql = "SELECT town_id FROM townChunks WHERE town_id = ? AND (chunkX = ? + 1 OR chunkX = ? OR chunkX = ? - 1) AND (chunkZ = ? + 1 OR chunkZ = ? OR chunkZ = ? - 1)";
+                parameters = {town_id, Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkZ(), Player:GetChunkZ(), Player:GetChunkZ()};
+                local result = ExecuteStatement(sql, parameters)[1];
 
-            Player:SendMessageSuccess("Land claimed");
+                if not (result == nil) then -- The chunk to be claimed is next to an already existing chunk of the town
+                    sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)";
+                    parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()}
+                    ExecuteStatement(sql, parameters);
+
+                    Player:SendMessageSuccess("Land succesfully claimed");
+                else
+                    Player:SendMessageFailure("You have to be next to your town to claim land!");
+                end
+
+            else
+                Player:SendMessageFailure("This chunk already belongs to a different town");
+            end
         else
-            Player:SendMessageFailure("This chunk already belongs to a different town");
+            Player:SendMessageFailure("You can't claim land if you're not in a town");
         end
     else
-        Player:SendMessageFailure("You can't claim land if you're not in a town");
+        Player:SendMessageFailure("You can't claim land that is already part of a town!");
     end
-    return true;
+        return true;
 end
