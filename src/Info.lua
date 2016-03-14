@@ -23,7 +23,13 @@ g_PluginInfo =
 					HelpString = "Displays the current plugin version to the player",
 					Permission = "townvalds.version",
 				},
-			},
+                                reloadconfig =
+                                {
+                                        Handler = LoadConfig,
+                                        HelpString = "Reloads the Townvalds configuration file",
+                                        Permission = "townvalds.reload-config",
+                                }
+			}
 		},
 		["/town"] =
 		{
@@ -67,6 +73,11 @@ g_PluginInfo =
 					Handler = CreateTable,
 					HelpString = "townvalds.database",
 				},
+                                reloadconfig =
+                                {
+                                        Handler = LoadConfig,
+                                        HelpString = "Reloads the Townvalds configuration file",
+                                }
 			},
 		},
 	},
@@ -87,5 +98,10 @@ g_PluginInfo =
 			Description = "Allows the player to view information about a resident",
 			RecommendedGroups = "default",
 		},
+                ["townvalds.reload-config"] =
+		{
+			Description = "Allows the player to view information about a resident",
+			RecommendedGroups = "admins",
+		}
 	},
 }
