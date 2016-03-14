@@ -59,11 +59,27 @@ function TownClaim(Split, Player)
         local result = ExecuteStatement(sql, parameters);
 
         if not (result[1] == town_id) then
-            sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)";
-            parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()}
-            ExecuteStatement(sql, parameters);
+            sql = "SELECT chunkX, chunkZ FROM townChunks WHERE town_id = ?";
+            parameters = {town_id};
+            local townChunks = ExecuteStatement(sql, parameters);
 
-            Player:SendMessageSuccess("Land claimed");
+            local nextToTown = false; --If set to true, means the current chunk is next to the player's existing town
+            for key, value in pairs(townChunks) do
+                LOG(value[1] - 1 .. " Player location: " .. Player:GetChunkX() .. " " .. Player:GetChunkZ());
+                if((Player:GetChunkX() == value[1] - 1 or Player:GetChunkX() == value[1] + 1) and (Player:GetChunkZ() == value[2] - 1 or Player:GetChunkZ() == value[2] + 1)) then
+                    nextToTown = true;
+                end
+            end
+            if(nextToTown == true) then -- The chunk to be claimed is next to an already existing chunk of the town
+                sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)";
+                parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()}
+                ExecuteStatement(sql, parameters);
+
+                Player:SendMessageSuccess("Land claimed");
+            else
+                Player:SendMessageFailure("You have to be next to your town to claim land!");
+            end
+
         else
             Player:SendMessageFailure("This chunk already belongs to a different town");
         end
