@@ -23,12 +23,12 @@ g_PluginInfo =
 					HelpString = "Displays the current plugin version to the player",
 					Permission = "townvalds.version",
 				},
-                                reloadconfig =
-                                {
-                                        Handler = LoadConfig,
-                                        HelpString = "Reloads the Townvalds configuration file",
-                                        Permission = "townvalds.reload-config",
-                                }
+                reloadconfig =
+                {
+                        Handler = LoadConfig,
+                        HelpString = "Reloads the Townvalds configuration file",
+                        Permission = "townvalds.reload-config",
+                }
 			}
 		},
 		["/town"] =
@@ -46,6 +46,12 @@ g_PluginInfo =
 					Handler = TownClaim,
 					HelpString = "Claims a chunk for the current town",
 					Permission = "townvalds.town.claim",
+				},
+				unclaim =
+				{
+					Handler = TownUnclaim,
+					HelpString = "Unclaims a chunk for the current town",
+					Permission = "townvalds.town.unclaim",
 				}
 			}
 		},
@@ -73,11 +79,11 @@ g_PluginInfo =
 					Handler = CreateTable,
 					HelpString = "townvalds.database",
 				},
-                                reloadconfig =
-                                {
-                                        Handler = LoadConfig,
-                                        HelpString = "Reloads the Townvalds configuration file",
-                                }
+                reloadconfig =
+                {
+                        Handler = LoadConfig,
+                        HelpString = "Reloads the Townvalds configuration file",
+                }
 			},
 		},
 	},
@@ -98,10 +104,25 @@ g_PluginInfo =
 			Description = "Allows the player to view information about a resident",
 			RecommendedGroups = "default",
 		},
-                ["townvalds.reload-config"] =
+        ["townvalds.reload-config"] =
 		{
 			Description = "Allows the player to view information about a resident",
 			RecommendedGroups = "admins",
-		}
+		},
+		["townvalds.town.new"] =
+		{
+			Discription = "Allows the player to create a new town",
+			RecommendedGroups = "default",
+		},
+		["townvalds.town.claim"] =
+		{
+			Discription = "Allows the player to claim a new chunk for the town",
+			RecommendedGroups = "default",
+		},
+		["townvalds.town.unclaim"] =
+		{
+			Discription = "Allows the player to unclaim a chunk for the town",
+			RecommendedGroups = "default",
+		},
 	},
 }
