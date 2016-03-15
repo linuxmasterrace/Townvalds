@@ -64,6 +64,12 @@ g_PluginInfo =
 					Handler = TownJoin,
 					HelpString = "If the player has an invitation of the specified town, this joins that town",
 					Permission = "townvalds.town.join",
+				},
+				leave =
+				{
+					Handler = TownLeave,
+					HelpString = "Leave the current town",
+					Permission = "townvalds.town.leave",
 				}
 			}
 		},

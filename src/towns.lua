@@ -144,15 +144,17 @@ function TownJoin(Split, Player)
             Player:SendMessageFailure("You have no invitations!");
 
             return true;
-        elseif not(result[2] == nil) then
-            Player:SendMessageFailure("You have multiple invitations, please specify which one you want to join:");
-            for key, value in pairs(result) do
-                Player:SendMessageInfo(GetTownName(value[1]));
-            end
-
-            return true;
         else
-            town_id = result[1];
+            if not(result[2] == nil) then
+                Player:SendMessageFailure("You have multiple invitations, please specify which one you want to join:");
+                for key, value in pairs(result) do
+                    Player:SendMessageInfo(GetTownName(value[1]));
+                end
+
+                return true;
+            else
+                town_id = result[1][1];
+            end
         end
     else
         town_id = GetTownId(Split[3]);
@@ -167,6 +169,24 @@ function TownJoin(Split, Player)
     ExecuteStatement(sql, parameters);
 
     Player:SendMessageSuccess("You succesfully joined the town!");
+
+    return true;
+end
+
+function TownLeave(Split, Player)
+    sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
+    parameter = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true)};
+    local result = ExecuteStatement(sql, parameter);
+
+    if(result[1] and result[1][1]) then
+        sql = "UPDATE residents SET town_id = ? WHERE player_uuid = ?";
+        parameters = {nil, cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true)};
+        ExecuteStatement(sql, parameters);
+
+        Player:SendMessageInfo("You left the town " .. GetTownName(result[1][1]));
+    else
+        Player:SendMessageFailure("You can't leave a town if you're not in one.");
+    end
 
     return true;
 end
