@@ -52,6 +52,12 @@ g_PluginInfo =
 					Handler = TownUnclaim,
 					HelpString = "Unclaims a chunk for the current town",
 					Permission = "townvalds.town.unclaim",
+				},
+				toggle =
+				{
+					Handler = TownToggle,
+					HelpString = "Changes properties of the current town",
+					Permission = "townvalds.town.toggle",
 				}
 			}
 		},
