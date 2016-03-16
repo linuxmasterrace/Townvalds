@@ -68,6 +68,14 @@ function GetTownId(town_name)
     end
 end
 
+function GetTimestampFromString(timestring) --Returns the Lua timestamp from a string which is formatted as "YYYY-mm-dd HH:MM:SS"
+	local pattern = "(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)";
+	local year, month, day, hour, minute, second = timestring:match(pattern);
+	local convertedTimestamp = os.time({year = year, month = month, day = day, hour = hour, min = minute, sec = second});
+
+	return convertedTimestamp;
+end
+
 function OnPlayerJoined(Player)
     local sql = "INSERT OR IGNORE INTO residents (player_uuid, player_name, town_id, town_rank, last_online) VALUES (?, ?, NULL, NULL, datetime(\"now\"))";
     local parameters = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true), Player:GetName()};

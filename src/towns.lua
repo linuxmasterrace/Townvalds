@@ -120,7 +120,6 @@ function TownAddPlayer(Split, Player)
             sql = "INSERT INTO invitations (player_uuid, town_id) VALUES (?, ?)";
             parameters = {cMojangAPI:GetUUIDFromPlayerName(Split[3], true), town_id};
             ExecuteStatement(sql, parameters);
-
             Player:SendMessageSuccess("The specified player is succesfully invited to the town");
         else
             Player:SendMessageFailure("The specified player already belongs to a town.");
@@ -134,18 +133,19 @@ end
 
 function TownJoin(Split, Player)
     local town_id;
+	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
 
-    if(Split[3] == nil) then
-        sql = "SELECT town_id FROM invitations WHERE player_uuid = ?";
-        parameters = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true)};
-        local result = ExecuteStatement(sql, parameters);
+	sql = "SELECT town_id FROM invitations WHERE player_uuid = ?";
+	parameters = {UUID};
+	local result = ExecuteStatement(sql, parameters);
 
-        if(result[1] == nil) then
-            Player:SendMessageFailure("You have no invitations!");
+	if(result[1] == nil) then
+		Player:SendMessageFailure("You have no invitations!");
 
-            return true;
-        else
-            if not(result[2] == nil) then
+		return true;
+	else
+	    if(Split[3] == nil) then
+			if not(result[2] == nil) then
                 Player:SendMessageFailure("You have multiple invitations, please specify which one you want to join:");
                 for key, value in pairs(result) do
                     Player:SendMessageInfo(GetTownName(value[1]));
@@ -155,20 +155,35 @@ function TownJoin(Split, Player)
             else
                 town_id = result[1][1];
             end
-        end
-    else
-        town_id = GetTownId(Split[3]);
-    end
+	    else
+	        town_id = GetTownId(Split[3]);
+	    end
 
-    sql = "UPDATE residents SET town_id = ? WHERE player_uuid = ?";
-    parameters = {town_id, cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true)};
-    ExecuteStatement(sql, parameters);
+		if not (config.invitation_duration == "0") then
+			sql = "SELECT invitation_id, invitation_date FROM invitations WHERE town_id = ? AND player_uuid = ?";
+			parameters = {town_id, UUID};
+			local invitation = ExecuteStatement(sql, parameters)[1];
 
-    sql = "DELETE FROM invitations WHERE player_uuid = ?";
-    parameters = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true)};
-    ExecuteStatement(sql, parameters);
+			if not (os.time(os.date("!*t")) - GetTimestampFromString(invitation[2]) <= tonumber(config.invitation_duration)) then
+				sql = "DELETE FROM invitations WHERE invitation_id = ?";
+				parameter = {invitation[1]};
+				ExecuteStatement(sql, parameter);
 
-    Player:SendMessageSuccess("You succesfully joined the town!");
+				Player:SendMessageFailure("Sorry, this invitation is too old. Please request a new one from the mayor!");
+				return true;
+			end
+		end
+
+		sql = "UPDATE residents SET town_id = ? WHERE player_uuid = ?";
+	    parameters = {town_id, UUID};
+	    ExecuteStatement(sql, parameters);
+
+	    sql = "DELETE FROM invitations WHERE player_uuid = ?";
+	    parameters = {UUID};
+	    ExecuteStatement(sql, parameters);
+
+	    Player:SendMessageSuccess("You succesfully joined the town!");
+	end
 
     return true;
 end
