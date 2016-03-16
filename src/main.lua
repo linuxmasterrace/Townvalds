@@ -19,6 +19,9 @@ function Initialize(Plugin)
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_SPAWNED, OnPlayerSpawned);
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_BREAKING_BLOCK, OnPlayerBreakingBlock);
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_PLACING_BLOCK, OnPlayerPlacingBlock);
+	cPluginManager.AddHook(cPluginManager.HOOK_EXPLODING, OnExploding);
+	cPluginManager.AddHook(cPluginManager.HOOK_EXPLODED, OnExploded);
+	cPluginManager:AddHook(cPluginManager.HOOK_SPAWNING_ENTITY, OnSpawningEntity);
 
     ini = cIniFile();
 
