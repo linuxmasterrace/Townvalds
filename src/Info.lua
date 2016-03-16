@@ -70,6 +70,12 @@ g_PluginInfo =
 					Handler = TownLeave,
 					HelpString = "Leave the current town",
 					Permission = "townvalds.town.leave",
+				},
+				toggle =
+				{
+					Handler = TownToggle,
+					HelpString = "Changes properties of the current town",
+					Permission = "townvalds.town.toggle",
 				}
 			}
 		},

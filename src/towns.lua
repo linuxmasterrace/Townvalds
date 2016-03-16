@@ -49,65 +49,66 @@ function TownCreate(Split, Player)
 end
 
 function TownClaim(Split, Player)
-    if(InTown[Player:GetName()] == nil) then
-        -- Get the town of the player
-        local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
+	if(InTown[Player:GetName()] == nil) then
+		-- Get the town of the player
+		local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
 
-        if not(town_id == nil) then
-            sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
-            parameters = {Player:GetChunkX(), Player:GetChunkZ()};
-            local result = ExecuteStatement(sql, parameters);
+		if not (town_id == nil) then
+			sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
+			parameters = {Player:GetChunkX(), Player:GetChunkZ()};
+			local result = ExecuteStatement(sql, parameters);
 
-            if not (result[1] == town_id) then
-                sql = "SELECT town_id FROM townChunks WHERE town_id = ? AND (chunkX = ? + 1 OR chunkX = ? OR chunkX = ? - 1) AND (chunkZ = ? + 1 OR chunkZ = ? OR chunkZ = ? - 1)";
-                parameters = {town_id, Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkZ(), Player:GetChunkZ(), Player:GetChunkZ()};
-                local result = ExecuteStatement(sql, parameters)[1];
+			if not (result[1] == town_id) then
+				sql = "SELECT town_id FROM townChunks WHERE town_id = ? AND (chunkX = ? + 1 OR chunkX = ? OR chunkX = ? - 1) AND (chunkZ = ? + 1 OR chunkZ = ? OR chunkZ = ? - 1)";
+				parameters = {town_id, Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkZ(), Player:GetChunkZ(), Player:GetChunkZ()};
+				local result = ExecuteStatement(sql, parameters)[1];
 
-                if not (result == nil) then -- The chunk to be claimed is next to an already existing chunk of the town
-                    sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)";
-                    parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()};
-                    ExecuteStatement(sql, parameters);
+				if not (result == nil) then -- The chunk to be claimed is next to an already existing chunk of the town
+					sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)";
+					parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()};
+					ExecuteStatement(sql, parameters);
 
-                    Player:SendMessageSuccess("Land succesfully claimed");
-                else
-                    Player:SendMessageFailure("You have to be next to your town to claim land!");
-                end
+					Player:SendMessageSuccess("Land succesfully claimed");
+				else
+					Player:SendMessageFailure("You have to be next to your town to claim land!");
+				end
 
-            else
-                Player:SendMessageFailure("This chunk already belongs to a different town");
-            end
-        else
-            Player:SendMessageFailure("You can't claim land if you're not in a town");
-        end
-    else
-        Player:SendMessageFailure("You can't claim land that is already part of a town!");
-    end
-        return true;
+			else
+				Player:SendMessageFailure("This chunk already belongs to a different town");
+			end
+		else
+			Player:SendMessageFailure("You can't claim land if you're not in a town");
+		end
+	else
+		Player:SendMessageFailure("You can't claim land that is already part of a town!");
+	end
+		return true;
 end
 
 function TownUnclaim(Split, Player)
-    if not (InTown[Player:GetName()] == nil) then
-        local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
+	if not (InTown[Player:GetName()] == nil) then
+		local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
 
-        sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
-        parameters = {Player:GetChunkX(), Player:GetChunkZ()};
-        local result = ExecuteStatement(sql, parameters)[1][1];
+		sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
+		parameters = {Player:GetChunkX(), Player:GetChunkZ()};
+		local result = ExecuteStatement(sql, parameters)[1][1];
 
-        if(town_id == result) then
-            sql = "DELETE FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ?";
-            parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()};
-            ExecuteStatement(sql, parameters);
+		if(town_id == result) then
+			sql = "DELETE FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ?";
+			parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()};
+			ExecuteStatement(sql, parameters);
 
-            Player:SendMessageSuccess("Land succesfully unclaimed.");
-        else
-            Player:SendMessageFailure("This is not your town!");
-        end
-    else
-        Player:SendMessageFailure("You can't unclaim land if you're not in a town!");
-    end
+			Player:SendMessageSuccess("Land succesfully unclaimed.");
+		else
+			Player:SendMessageFailure("This is not your town!");
+		end
+	else
+		Player:SendMessageFailure("You can't unclaim land if you're not in a town!");
+	end
 
-    return true;
+	return true;
 end
+
 
 function TownAddPlayer(Split, Player)
     if(Split[3] == nil) then
@@ -214,4 +215,40 @@ function TownLeave(Split, Player)
     end
 
     return true;
+end
+
+function TownToggle(Split, Player)
+	if (Split[3] == nil) or (Split[4] == nil) then
+		Player:SendMessageFailure("You have to enter a property! Usage: /town toggle (property) (value)");
+		return true;
+	end
+
+	if not (Split[4] == "0" or Split[4] == "1") then
+		Player:SendMessageFailure("(value) must be 0 or 1");
+		Player:SendMessageFailure(Split[4]);
+		return true;
+	end
+
+	if not (InTown[Player:GetName()] == nil) then
+		local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
+
+		sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
+		parameters = {Player:GetChunkX(), Player:GetChunkZ()};
+		local result = ExecuteStatement(sql, parameters)[1][1];
+		
+		if Split[3] == "explosions" then
+			if(town_id == result) then
+				sql = "UPDATE towns SET town_explosions_enabled= ? WHERE town_id = ?"
+				paramters = {Split[4], town_id};
+				ExecuteStatement(sql, paramters);
+
+				Player:SendMessageSuccess("Property changed.");
+			else
+				Player:SendMessageFailure("This is not your town!");
+			end
+		end
+	else
+		Player:SendMessageFailure("You can't toggle if you're not in a town!");
+	end
+	return true;
 end
