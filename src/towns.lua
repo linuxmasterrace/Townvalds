@@ -5,29 +5,39 @@ function TownCreate(Split, Player)
         return true;
     end
 
-    -- Retrieve the player UUID from Mojang of the player that invoked the command
-    local result = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
+    local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
 
-    if not (result == nil) then
+    -- Retrieve the player UUID from Mojang of the player that invoked the command
+    local result = GetPlayerTown(UUID);
+
+    if (result == nil) then
         sql = "SELECT town_name FROM towns WHERE town_name = ?";
         parameter = {Split[3]};
         local result = ExecuteStatement(sql, parameter);
 
         if(result[1] == nil) then
-            -- Insert the town data in the database
-            sql = "INSERT INTO towns (town_name, town_owner) VALUES (?, ?)";
-            parameters = {Split[3], UUID};
+            sql = "SELECT town_id FROM townChunks WHERE (chunkX > ? AND chunkX < ?) AND (chunkZ > ? AND chunkZ < ?)";
+            parameters = {Player:GetChunkX() - config.min_distance_from_other_towns - 1, Player:GetChunkX() + config.min_distance_from_other_towns + 1, Player:GetChunkZ() - config.min_distance_from_other_towns - 1, Player:GetChunkZ() + config.min_distance_from_other_towns + 1};
             local town_id = ExecuteStatement(sql, parameters);
 
-            sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)";
-            parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()};
-            ExecuteStatement(sql, parameters);
+            if not(town_id[1] and town_id[1][1]) then
+                -- Insert the town data in the database
+                sql = "INSERT INTO towns (town_name, town_owner) VALUES (?, ?)";
+                parameters = {Split[3], UUID};
+				local town_id = ExecuteStatement(sql, parameters);
 
-            local sql = "UPDATE residents SET town_id = ? WHERE player_uuid = ?";
-            local parameters = {town_id, UUID};
-            ExecuteStatement(sql, parameters);
+                sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)";
+                parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()};
+                ExecuteStatement(sql, parameters);
 
-            Player:SendMessageSuccess("Created a new town called " .. Split[3]);
+                local sql = "UPDATE residents SET town_id = ? WHERE player_uuid = ?";
+                local parameters = {town_id, UUID};
+                ExecuteStatement(sql, parameters);
+
+                Player:SendMessageSuccess("Created a new town called " .. Split[3]);
+            else
+                Player:SendMessageFailure("You're too close to an existing town, please move further away before trying to create a new town.");
+            end
         else
             Player:SendMessageFailure("There already exists a town with that name, please choose a different one");
         end
