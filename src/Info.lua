@@ -52,6 +52,24 @@ g_PluginInfo =
 					Handler = TownUnclaim,
 					HelpString = "Unclaims a chunk for the current town",
 					Permission = "townvalds.town.unclaim",
+				},
+				add =
+				{
+					Handler = TownAddPlayer,
+					HelpString = "Invites a player to a town",
+					Permission = "townvalds.town.add",
+				},
+				join =
+				{
+					Handler = TownJoin,
+					HelpString = "If the player has an invitation of the specified town, this joins that town",
+					Permission = "townvalds.town.join",
+				},
+				leave =
+				{
+					Handler = TownLeave,
+					HelpString = "Leave the current town",
+					Permission = "townvalds.town.leave",
 				}
 			}
 		},
