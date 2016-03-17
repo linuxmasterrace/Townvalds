@@ -252,3 +252,16 @@ function TownToggle(Split, Player)
 	end
 	return true;
 end
+
+function TownList(Split, Player)
+	local sql = "SELECT town_name FROM towns"
+	local parameters = {};
+	local result = ExecuteStatement(sql, parameters);
+
+	Player:SendMessageSuccess("[ Towns ]")
+
+	for k,v in pairs(result) do
+		Player:SendMessageSuccess(v[1]);
+	end
+	return true;
+end
