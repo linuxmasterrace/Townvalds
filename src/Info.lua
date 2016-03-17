@@ -76,7 +76,13 @@ g_PluginInfo =
 					Handler = TownToggle,
 					HelpString = "Changes properties of the current town",
 					Permission = "townvalds.town.toggle",
-				}
+				},
+				list = 
+				{
+					Handler = TownList,
+					HelpString = "Lists towns",
+					Permission = "townvalds.town.list",
+				},
 			}
 		},
 		["/resident"] =
