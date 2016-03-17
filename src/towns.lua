@@ -109,7 +109,6 @@ function TownUnclaim(Split, Player)
 	return true;
 end
 
-
 function TownAddPlayer(Split, Player)
     if(Split[3] == nil) then
         Player:SendMessageFailure("You need to specify a player.");
@@ -235,11 +234,11 @@ function TownToggle(Split, Player)
 		sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
 		parameters = {Player:GetChunkX(), Player:GetChunkZ()};
 		local result = ExecuteStatement(sql, parameters)[1][1];
-		
+
 		if Split[3] == "explosions" then
 			if(town_id == result) then
 				sql = "UPDATE towns SET town_explosions_enabled= ? WHERE town_id = ?"
-				paramters = {Split[4], town_id};
+				parameters = {Split[4], town_id};
 				ExecuteStatement(sql, paramters);
 
 				Player:SendMessageSuccess("Property changed.");
@@ -263,5 +262,76 @@ function TownList(Split, Player)
 	for k,v in pairs(result) do
 		Player:SendMessageSuccess(v[1]);
 	end
+	return true;
+end
+
+function TownRank(Split, Player)
+	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+
+	sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
+	parameter = {UUID};
+	local town_id = ExecuteStatement(sql, parameter)[1][1];
+
+	if(town_id) then
+		local ranks = Set{"assistent"};
+
+		if not (Split[3]) then
+			Player:SendMessageFailure("This command requires an extra parameter! Usage: /town rank (list/add/remove) {rank} {playername}");
+			return true;
+		end
+
+		if (Split[3] == "list") then
+			for key, value in pairs(ranks) do
+				Player:SendMessageInfo(key);
+			end
+		elseif (Split[3] == "add" or Split[3] == "remove") then
+			if not (Split[4]) then
+				Player:SendMessageFailure("Please specify a rank!");
+			else
+				if (ranks[Split[4]]) then --Check if the specified rank actually exists
+					if(Split[5]) then
+						local player_uuid = cMojangAPI:GetUUIDFromPlayerName(Split[5], true);
+
+						if (player_uuid == UUID) then --Check if the player didn't specify him/herself
+							Player:SendMessageFailure("You can not specify yourself.");
+						elseif not (player_uuid == "") then --Check if the player actually exists
+							sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
+							parameter = {player_uuid};
+							local player_town_id = ExecuteStatement(sql, parameter)[1][1];
+
+							if(player_town_id == town_id) then --Check if the specified player is actually part of the command invokers town
+								if(Split[3] == "add") then
+									sql = "UPDATE residents SET town_rank = ? WHERE player_uuid = ?";
+									parameters = {Split[4], player_uuid};
+									ExecuteStatement(sql, parameters);
+
+									Player:SendMessageSuccess("Rank granted to the player!");
+								else
+									sql = "UPDATE residents SET town_rank = ? WHERE player_uuid = ?";
+									parameters = {nil, player_uuid};
+									ExecuteStatement(sql, parameters);
+
+									Player:SendMessageSuccess("Rank removed from the player!");
+								end
+							else
+								Player:SendMessageFailure("The specified player is not part of your town!");
+							end
+						else
+							Player:SendMessageFailure("The specified player doesn't exist!");
+						end
+					else
+						Player:SendMessageFailure("Please specify a player!");
+					end
+				else
+					Player:SendMessageFailure("The rank you specified doesn't exist!");
+				end
+			end
+		else
+			Player:SendMessageFailure("Unknown action '" .. Split[3] .. "'");
+		end
+	else
+		Player:SendMessageFailure("You are not part of a town!");
+	end
+
 	return true;
 end

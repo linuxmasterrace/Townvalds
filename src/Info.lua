@@ -77,11 +77,17 @@ g_PluginInfo =
 					HelpString = "Changes properties of the current town",
 					Permission = "townvalds.town.toggle",
 				},
-				list = 
+				list =
 				{
 					Handler = TownList,
 					HelpString = "Lists towns",
 					Permission = "townvalds.town.list",
+				},
+				rank =
+				{
+					Handler = TownRank,
+					HelpString = "Lists available ranks, or grant and remove a rank to a resident of the town",
+					Permission = "townvalds.town.rank",
 				},
 			}
 		},
@@ -141,18 +147,23 @@ g_PluginInfo =
 		},
 		["townvalds.town.new"] =
 		{
-			Discription = "Allows the player to create a new town",
+			Description = "Allows the player to create a new town",
 			RecommendedGroups = "default",
 		},
 		["townvalds.town.claim"] =
 		{
-			Discription = "Allows the player to claim a new chunk for the town",
+			Description = "Allows the player to claim a new chunk for the town",
 			RecommendedGroups = "default",
 		},
 		["townvalds.town.unclaim"] =
 		{
-			Discription = "Allows the player to unclaim a chunk for the town",
+			Description = "Allows the player to unclaim a chunk for the town",
 			RecommendedGroups = "default",
 		},
+		["townvalds.town.rank"] =
+		{
+			Description = "Lists available ranks, or grant and remove a rank to a resident of the town",
+			RecommendedGroups = "default",
+		}
 	},
 }
