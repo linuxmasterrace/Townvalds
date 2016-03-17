@@ -34,10 +34,46 @@ end
 
 function GetPlayerTown(UUID)
     sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
-    parameters = {UUID}
-    local town_id = ExecuteStatement(sql, parameters)[1][1];
+    parameters = {UUID};
+    local result = ExecuteStatement(sql, parameters);
 
-    return town_id;
+    if (result[1] and result[1][1]) then
+        return result[1][1];
+    else
+        return nil;
+    end
+end
+
+function GetTownName(town_id)
+    sql = "SELECT town_name FROM towns WHERE town_id = ?";
+    parameters = {town_id};
+    local result = ExecuteStatement(sql, parameters);
+
+    if(result[1] and result[1][1]) then
+        return result[1][1];
+    else
+        return nil;
+    end
+end
+
+function GetTownId(town_name)
+    sql = "SELECT town_id FROM towns WHERE town_name = ?";
+    parameters = {town_name};
+    local result = ExecuteStatement(sql, parameters);
+
+    if(result[1] and result[1][1]) then
+        return result[1][1];
+    else
+        return nil;
+    end
+end
+
+function GetTimestampFromString(timestring) --Returns the Lua timestamp from a string which is formatted as "YYYY-mm-dd HH:MM:SS"
+	local pattern = "(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)";
+	local year, month, day, hour, minute, second = timestring:match(pattern);
+	local convertedTimestamp = os.time({year = year, month = month, day = day, hour = hour, min = minute, sec = second});
+
+	return convertedTimestamp;
 end
 
 function OnPlayerJoined(Player)
