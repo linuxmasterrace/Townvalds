@@ -212,15 +212,15 @@ function TownLeave(Split, Player)
 			parameter = {town_id};
 			local town_name = ExecuteStatement(sql, parameter)[1][1];
 
-			sql = "UPDATE residents SET town_id = ? WHERE player_uuid = ?";
-	        parameters = {nil, UUID};
-	        ExecuteStatement(sql, parameters);
+			sql = "UPDATE residents SET town_id = NULL WHERE player_uuid = ?";
+	        parameter = {UUID};
+	        ExecuteStatement(sql, parameter);
 
 			if (Leaving[UUID] == "remove") then --The user is the last member of the town
 				-- To make sure that even if people have joined between the 2 times this command is run by the same player
 				-- they are all removed from the town properly, we set town_id by all remaining residents to nil
-				sql = "UPDATE residents SET town_id = ? WHERE town_id = ?";
-				parameter = {nil, town_id};
+				sql = "UPDATE residents SET town_id = NULL WHERE town_id = ?";
+				parameter = {town_id};
 				ExecuteStatement(sql, parameter);
 
 				sql = "DELETE FROM townChunks WHERE town_id = ?";
