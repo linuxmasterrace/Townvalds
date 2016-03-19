@@ -216,12 +216,16 @@ function TownLeave(Split, Player)
 	        parameter = {UUID};
 	        ExecuteStatement(sql, parameter);
 
-			if (Leaving[UUID] == "remove") then --The user is the last member of the town
+			sql = "SELECT player_uuid FROM residents WHERE town_id = ?";
+			parameter = {town_id};
+			local players = ExecuteStatement(sql, parameter);
+
+			if not (players[1] and players[1][1]) then
 				-- To make sure that even if people have joined between the 2 times this command is run by the same player
 				-- they are all removed from the town properly, we set town_id by all remaining residents to nil
-				sql = "UPDATE residents SET town_id = NULL WHERE town_id = ?";
-				parameter = {town_id};
-				ExecuteStatement(sql, parameter);
+				--sql = "UPDATE residents SET town_id = NULL WHERE town_id = ?";
+				--parameter = {town_id};
+				--ExecuteStatement(sql, parameter);
 
 				sql = "DELETE FROM townChunks WHERE town_id = ?";
 				parameter = {town_id};
@@ -247,15 +251,16 @@ function TownLeave(Split, Player)
 			sql = "SELECT player_name FROM residents WHERE town_id = ?";
 			parameter = {town_id};
 			local playersInTown = ExecuteStatement(sql, parameter);
+
 			if (playersInTown[2] == nil) then
 				Player:SendMessageInfo("Since you are the last member of your town, leaving it will cause it to removed.");
 				Player:SendMessageInfo("Use `/town leave` again if you wish to continue.");
-				Leaving[UUID] = "remove";
 			else
 				Player:SendMessageInfo("Are you sure you want to leave?");
 				Player:SendMessageInfo("Use `/town leave` again if you wish to continue.");
-				Leaving[UUID] = true;
 			end
+
+			Leaving[UUID] = true;
 		end
     else
         Player:SendMessageFailure("You can't leave a town if you're not in one.");
