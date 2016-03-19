@@ -199,17 +199,69 @@ function TownJoin(Split, Player)
     return true;
 end
 
+Leaving = {};
 function TownLeave(Split, Player)
+	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
     sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
     parameter = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true)};
-    local result = ExecuteStatement(sql, parameter);
+    local town_id = ExecuteStatement(sql, parameter)[1][1];
 
-    if(result[1] and result[1][1]) then
-        sql = "UPDATE residents SET town_id = ? WHERE player_uuid = ?";
-        parameters = {nil, cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true)};
-        ExecuteStatement(sql, parameters);
+    if(town_id) then
+		if not (Leaving[UUID] == nil) then --The user confirmed he/she wants to leave
+			sql = "SELECT town_name FROM towns WHERE town_id = ?";
+			parameter = {town_id};
+			local town_name = ExecuteStatement(sql, parameter)[1][1];
 
-        Player:SendMessageInfo("You left the town " .. GetTownName(result[1][1]));
+			sql = "UPDATE residents SET town_id = NULL WHERE player_uuid = ?";
+	        parameter = {UUID};
+	        ExecuteStatement(sql, parameter);
+
+			sql = "SELECT player_uuid FROM residents WHERE town_id = ?";
+			parameter = {town_id};
+			local players = ExecuteStatement(sql, parameter);
+
+			if not (players[1] and players[1][1]) then
+				-- To make sure that even if people have joined between the 2 times this command is run by the same player
+				-- they are all removed from the town properly, we set town_id by all remaining residents to nil
+				--sql = "UPDATE residents SET town_id = NULL WHERE town_id = ?";
+				--parameter = {town_id};
+				--ExecuteStatement(sql, parameter);
+
+				sql = "DELETE FROM townChunks WHERE town_id = ?";
+				parameter = {town_id};
+				ExecuteStatement(sql, parameter);
+
+				sql = "DELETE FROM towns WHERE town_id = ?";
+				parameter = {town_id};
+				ExecuteStatement(sql, parameter);
+
+				sql = "DELETE FROM invitations WHERE town_id = ?";
+				parameter = {town_id};
+				ExecuteStatement(sql, parameter);
+
+				Player:GetWorld():BroadcastChatInfo("The town " .. town_name .. " fell in ruins!");
+			else
+				Player:SendMessageInfo("You left " .. town_name);
+			end
+
+			Leaving[UUID] = nil;
+
+			return true;
+		else
+			sql = "SELECT player_name FROM residents WHERE town_id = ?";
+			parameter = {town_id};
+			local playersInTown = ExecuteStatement(sql, parameter);
+
+			if (playersInTown[2] == nil) then
+				Player:SendMessageInfo("Since you are the last member of your town, leaving it will cause it to removed.");
+				Player:SendMessageInfo("Use `/town leave` again if you wish to continue.");
+			else
+				Player:SendMessageInfo("Are you sure you want to leave?");
+				Player:SendMessageInfo("Use `/town leave` again if you wish to continue.");
+			end
+
+			Leaving[UUID] = true;
+		end
     else
         Player:SendMessageFailure("You can't leave a town if you're not in one.");
     end
@@ -235,7 +287,7 @@ function TownToggle(Split, Player)
 		sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
 		parameters = {Player:GetChunkX(), Player:GetChunkZ()};
 		local result = ExecuteStatement(sql, parameters)[1][1];
-		
+
 		if Split[3] == "explosions" then
 			if(town_id == result) then
 				sql = "UPDATE towns SET town_explosions_enabled= ? WHERE town_id = ?"
