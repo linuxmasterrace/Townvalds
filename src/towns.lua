@@ -307,9 +307,9 @@ function TownRank(Split, Player)
 
 									Player:SendMessageSuccess("Rank granted to the player!");
 								else
-									sql = "UPDATE residents SET town_rank = ? WHERE player_uuid = ?";
-									parameters = {nil, player_uuid};
-									ExecuteStatement(sql, parameters);
+									sql = "UPDATE residents SET town_rank = NULL WHERE player_uuid = ?";
+									parameter = {player_uuid};
+									ExecuteStatement(sql, parameter);
 
 									Player:SendMessageSuccess("Rank removed from the player!");
 								end
