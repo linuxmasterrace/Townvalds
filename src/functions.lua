@@ -77,11 +77,16 @@ function GetTimestampFromString(timestring) --Returns the Lua timestamp from a s
 end
 
 function OnPlayerJoined(Player)
+	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
     local sql = "INSERT OR IGNORE INTO residents (player_uuid, player_name, town_id, town_rank, last_online) VALUES (?, ?, NULL, NULL, datetime(\"now\"))";
-    local parameters = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true), Player:GetName()};
+    local parameters = {UUID, Player:GetName()};
     if(ExecuteStatement(sql, parameters) == nil) then
         LOG("Couldn't add player "..Player:GetName().." to the database!!!");
     end
+
+	Channel[UUID] = "global";
+
+	return true;
 end
 
 function OnPlayerSpawned(Player) -- This is called after both connection and respawning
