@@ -244,6 +244,7 @@ function TownLeave(Split, Player)
 			end
 
 			Leaving[UUID] = nil;
+			Channel[UUID] = "global";
 
 			return true;
 		else
