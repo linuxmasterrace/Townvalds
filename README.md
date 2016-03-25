@@ -1,5 +1,5 @@
 ## What is Townvalds
-Townvalds is an opensource town plugin for Cuberite. We're aiming to create a fully FOSS town system compatible with Cyberite, comparable to Towny for Bukkit.
+Townvalds is an opensource town plugin for Cuberite. We're aiming to create a fully FOSS town system compatible with Cuberite, comparable to Towny for Bukkit.
 
 
 ## What is Cuberite
