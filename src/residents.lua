@@ -15,7 +15,7 @@ function DisplayResident(Split, Player)
 
    -- Query the resident info from the database
    local sql = "SELECT residents.player_name, towns.town_name, residents.town_rank, residents.last_online FROM residents LEFT JOIN towns ON towns.town_id = residents.town_id WHERE residents.player_name = ?"
-   local parameters = {Player:GetName()}
+   local parameters = {Split[2]}
    local result = ExecuteStatement(sql, parameters)
 
    if(result==nil) then

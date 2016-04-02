@@ -23,12 +23,12 @@ g_PluginInfo =
 					HelpString = "Displays the current plugin version to the player",
 					Permission = "townvalds.version",
 				},
-                reloadconfig =
-                {
-                        Handler = LoadConfig,
-                        HelpString = "Reloads the Townvalds configuration file",
-                        Permission = "townvalds.reload-config",
-                }
+				reloadconfig =
+				{
+					Handler = LoadConfig,
+					HelpString = "Reloads the Townvalds configuration file",
+					Permission = "townvalds.reload-config",
+				}
 			}
 		},
 		["/town"] =
@@ -83,11 +83,17 @@ g_PluginInfo =
 						},
 					}
 				},
-				list = 
+				list =
 				{
 					Handler = TownList,
 					HelpString = "Lists towns",
 					Permission = "townvalds.town.list",
+				},
+				rank =
+				{
+					Handler = TownRank,
+					HelpString = "Lists available ranks, or grant and remove a rank to a resident of the town",
+					Permission = "townvalds.town.rank",
 				},
 			}
 		},
@@ -96,6 +102,13 @@ g_PluginInfo =
 			Handler = DisplayResident,
 			HelpString = "Displays information about resident",
 			Permission = "townvalds.resident.info",
+		},
+		["/switchchat"] =
+		{
+			Alias = {"/sc", "/gc", "/tc", "/lc"},
+			Handler = SwitchChat,
+			HelpString = "Switches the active chat channel for the user",
+			Permission = "townvalds.chat.switch",
 		}
 	},
 	ConsoleCommands =
@@ -115,11 +128,11 @@ g_PluginInfo =
 					Handler = CreateTable,
 					HelpString = "townvalds.database",
 				},
-                reloadconfig =
-                {
-                        Handler = LoadConfig,
-                        HelpString = "Reloads the Townvalds configuration file",
-                }
+				reloadconfig =
+				{
+					Handler = LoadConfig,
+					HelpString = "Reloads the Townvalds configuration file",
+				}
 			},
 		},
 	},
@@ -140,24 +153,34 @@ g_PluginInfo =
 			Description = "Allows the player to view information about a resident",
 			RecommendedGroups = "default",
 		},
-        ["townvalds.reload-config"] =
+		["townvalds.reload-config"] =
 		{
 			Description = "Allows the player to view information about a resident",
 			RecommendedGroups = "admins",
 		},
 		["townvalds.town.new"] =
 		{
-			Discription = "Allows the player to create a new town",
+			Description = "Allows the player to create a new town",
 			RecommendedGroups = "default",
 		},
 		["townvalds.town.claim"] =
 		{
-			Discription = "Allows the player to claim a new chunk for the town",
+			Description = "Allows the player to claim a new chunk for the town",
 			RecommendedGroups = "default",
 		},
 		["townvalds.town.unclaim"] =
 		{
-			Discription = "Allows the player to unclaim a chunk for the town",
+			Description = "Allows the player to unclaim a chunk for the town",
+			RecommendedGroups = "default",
+		},
+		["townvalds.town.rank"] =
+		{
+			Description = "Lists available ranks, or grant and remove a rank to a resident of the town",
+			RecommendedGroups = "default",
+		},
+		["townvalds.chat.switch"] =
+		{
+			Description = "Allows the player to switch between chat channels",
 			RecommendedGroups = "default",
 		},
 	},
