@@ -217,15 +217,9 @@ function TownLeave(Split, Player)
     return true;
 end
 
-function TownToggle(Split, Player)
-	if (Split[3] == nil) or (Split[4] == nil) then
-		Player:SendMessageFailure("You have to enter a property! Usage: /town toggle (property) (value)");
-		return true;
-	end
-
-	if not (Split[4] == "0" or Split[4] == "1") then
-		Player:SendMessageFailure("(value) must be 0 or 1");
-		Player:SendMessageFailure(Split[4]);
+function TownToggleExplosions(Split, Player)
+	if not (Split[4] == "off" or Split[4] == "on") then
+		Player:SendMessageFailure("(value) must be off or on");
 		return true;
 	end
 
@@ -236,16 +230,14 @@ function TownToggle(Split, Player)
 		parameters = {Player:GetChunkX(), Player:GetChunkZ()};
 		local result = ExecuteStatement(sql, parameters)[1][1];
 		
-		if Split[3] == "explosions" then
-			if(town_id == result) then
-				sql = "UPDATE towns SET town_explosions_enabled= ? WHERE town_id = ?"
-				paramters = {Split[4], town_id};
-				ExecuteStatement(sql, paramters);
+		if(town_id == result) then
+			sql = "UPDATE towns SET town_explosions_enabled= ? WHERE town_id = ?"
+			paramters = {Split[4], town_id};
+			ExecuteStatement(sql, paramters);
 
-				Player:SendMessageSuccess("Property changed.");
-			else
-				Player:SendMessageFailure("This is not your town!");
-			end
+			Player:SendMessageSuccess("Property changed.");
+		else
+			Player:SendMessageFailure("This is not your town!");
 		end
 	else
 		Player:SendMessageFailure("You can't toggle if you're not in a town!");

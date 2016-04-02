@@ -15,8 +15,8 @@ function OnExploding(World, ExplosionSize, CanCauseFire, X, Y, Z, Source, Source
 	if ExecuteStatement(town_sql, town_parameters)[1] ~= nil then
 		
 		local town_id = ExecuteStatement(town_sql, town_parameters)[1][1];
-		local entity_sql = "SELECT town_id FROM towns WHERE town_explosions_enabled = 0";
-		local entity_paramters = {}
+		local entity_sql = "SELECT town_id FROM towns WHERE town_explosions_enabled = ?";
+		local entity_parameters = {"off"}
 		local result = ExecuteStatement(entity_sql, entity_parameters);
 		
 		for k in pairs(result) do
