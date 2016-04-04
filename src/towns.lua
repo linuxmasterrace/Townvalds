@@ -22,8 +22,8 @@ function TownCreate(Split, Player)
 
             if not(town_id[1] and town_id[1][1]) then
                 -- Insert the town data in the database
-                sql = "INSERT INTO towns (town_name, town_owner) VALUES (?, ?)";
-                parameters = {Split[3], UUID};
+                sql = "INSERT INTO towns (town_name, town_owner, town_explosions_enabled) VALUES (?, ?, ?)";
+                parameters = {Split[3], UUID, 0};
 				local town_id = ExecuteStatement(sql, parameters);
 
                 sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)";
@@ -269,24 +269,29 @@ function TownLeave(Split, Player)
 end
 
 function TownToggleExplosions(Split, Player)
-	if not (Split[4] == "off" or Split[4] == "on") then
-		Player:SendMessageFailure("(value) must be off or on");
-		return true;
-	end
-
 	if not (InTown[Player:GetName()] == nil) then
 		local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
 
-		sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
-		parameters = {Player:GetChunkX(), Player:GetChunkZ()};
+		local sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
+		local parameters = {Player:GetChunkX(), Player:GetChunkZ()};
 		local result = ExecuteStatement(sql, parameters)[1][1];
 		
 		if(town_id == result) then
-			sql = "UPDATE towns SET town_explosions_enabled= ? WHERE town_id = ?"
-			paramters = {Split[4], town_id};
-			ExecuteStatement(sql, paramters);
+			local sql = "SELECT town_explosions_enabled FROM towns WHERE town_id = ?";
+			local parameters = {town_id};
+			local value = ExecuteStatement(sql, parameters)[1][1];
 
-			Player:SendMessageSuccess("Property changed.");
+			local sql = "UPDATE towns SET town_explosions_enabled = ? WHERE town_id = ?";
+
+			if value == 0 then
+				parameters = {1, town_id};
+				Player:SendMessageSuccess("Explosions enabled");
+			elseif value == 1 then
+				parameters = {0, town_id};
+				Player:SendMessageSuccess("Explosions disabled");
+			end
+
+			ExecuteStatement(sql, parameters);
 		else
 			Player:SendMessageFailure("This is not your town!");
 		end
