@@ -16,7 +16,7 @@ function OnExploding(World, ExplosionSize, CanCauseFire, X, Y, Z, Source, Source
 		
 		local town_id = ExecuteStatement(town_sql, town_parameters)[1][1];
 		local entity_sql = "SELECT town_id FROM towns WHERE town_explosions_enabled = 0";
-		local entity_paramters = {}
+		local entity_parameters = {}
 		local result = ExecuteStatement(entity_sql, entity_parameters);
 		
 		for k in pairs(result) do

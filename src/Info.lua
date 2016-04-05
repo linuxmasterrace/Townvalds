@@ -71,11 +71,17 @@ g_PluginInfo =
 					HelpString = "Leave the current town",
 					Permission = "townvalds.town.leave",
 				},
-				toggle =
+				["toggle"] =
 				{
-					Handler = TownToggle,
-					HelpString = "Changes properties of the current town",
-					Permission = "townvalds.town.toggle",
+					Subcommands =
+					{
+						explosions =
+						{
+							Handler = TownToggleExplosions,
+							HelpString = "Changes properties of the current town",
+							Permission = "townvalds.town.toggle",
+						},
+					}
 				},
 				list =
 				{
