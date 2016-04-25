@@ -135,3 +135,9 @@ function Set(list)
 
 	return set;
 end
+
+function InsideArea(pos, high, low)
+    if pos <= high and pos >= low then
+        return true
+    end
+end

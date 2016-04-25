@@ -78,9 +78,15 @@ g_PluginInfo =
 						explosions =
 						{
 							Handler = TownToggleExplosions,
-							HelpString = "Changes properties of the current town",
-							Permission = "townvalds.town.toggle",
+							HelpString = "Toggles explosions in the current town",
+							Permission = "townvalds.town.toggle"
 						},
+                        pvp =
+                        {
+                            Handler = TownTogglePVP,
+                            HelpString = "Toggles PVP in the current town",
+                            Permission = "townvalds.town.toggle"
+                        }
 					}
 				},
 				list =

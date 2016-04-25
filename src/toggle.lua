@@ -51,8 +51,23 @@ function OnSpawningEntity(World, Entity)
 	end
 end
 
-function InsideArea(pos, high, low)
-	if pos <= high and pos >= low then
-		return true
-	end
+function OnTakeDamage(Receiver, TDI)
+    if Receiver:IsPlayer() and TDI.Attacker ~= nil then
+        if TDI.Attacker:IsPlayer() then
+            local town_sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
+            local town_parameters = {Receiver:GetChunkX(), Receiver:GetChunkZ()}; 
+            
+            if ExecuteStatement(town_sql, town_parameters)[1] ~= nil then
+                local town_id = ExecuteStatement(town_sql, town_parameters)[1][1];
+                local pvp_sql = "SELECT town_pvp_enabled FROM towns WHERE town_id = ?";
+                local pvp_parameters = {town_id};
+                local result = ExecuteStatement(pvp_sql, pvp_parameters)[1][1];
+                
+                if result == 0 then
+                    TDI.FinalDamage = 0;
+                    TDI.Knockback:Set(0,0,0);
+                end
+            end
+        end
+    end
 end
