@@ -53,18 +53,26 @@ end
 
 function OnTakeDamage(Receiver, TDI)
     if Receiver:IsPlayer() and TDI.Attacker ~= nil and TDI.Attacker:IsPlayer() then
+        attacker_result = 1
+        receiver_result = 1
         local town_sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
-        local town_parameters = {TDI.Attacker:GetChunkX(), TDI.Attacker:GetChunkZ()}; 
+        local pvp_sql = "SELECT town_pvp_enabled FROM towns WHERE town_id = ?";
+        
+        local attacker_parameters = {TDI.Attacker:GetChunkX(), TDI.Attacker:GetChunkZ()}; 
+        local receiver_parameters = {Receiver:GetChunkX(), Receiver:GetChunkZ()};
 
-        if ExecuteStatement(town_sql, town_parameters)[1] ~= nil then
-            local town_id = ExecuteStatement(town_sql, town_parameters)[1][1];
-            local pvp_sql = "SELECT town_pvp_enabled FROM towns WHERE town_id = ?";
-            local pvp_parameters = {town_id};
-            local result = ExecuteStatement(pvp_sql, pvp_parameters)[1][1];
+        if ExecuteStatement(town_sql, attacker_parameters)[1] ~= nil then
+            local attacker_town_id = ExecuteStatement(town_sql, attacker_parameters)[1][1];
+            attacker_result = ExecuteStatement(pvp_sql, {attacker_town_id})[1][1];
+        end
 
-            if result == 0 then
-                return true;
-            end
+        if ExecuteStatement(town_sql, receiver_parameters)[1] ~= nil then
+            local receiver_town_id = ExecuteStatement(town_sql, receiver_parameters)[1][1];
+            receiver_result = ExecuteStatement(pvp_sql, {receiver_town_id})[1][1];
+        end
+        
+        if attacker_result == 0 or receiver_result == 0 then
+            return true;
         end
     end
 end
