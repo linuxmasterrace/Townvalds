@@ -23,6 +23,7 @@ function Initialize(Plugin)
 	cPluginManager.AddHook(cPluginManager.HOOK_EXPLODED, OnExploded);
 	cPluginManager.AddHook(cPluginManager.HOOK_SPAWNING_ENTITY, OnSpawningEntity);
 	cPluginManager.AddHook(cPluginManager.HOOK_CHAT, OnChat);
+    cPluginManager.AddHook(cPluginManager.HOOK_TAKE_DAMAGE, OnTakeDamage);
 
     ini = cIniFile();
 
