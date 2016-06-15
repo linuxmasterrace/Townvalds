@@ -1,8 +1,8 @@
 InTown = {}
 
 function CheckPlayerInTown(Player, chunkX, chunkZ)
-    local sql = "SELECT towns.town_name, townChunks.chunkX, townChunks.chunkZ FROM townChunks LEFT JOIN towns ON towns.town_id = townChunks.town_id WHERE townChunks.chunkX = ? AND townChunks.chunkZ = ?";
-    local parameters = {chunkX, chunkZ};
+    local sql = "SELECT towns.town_name, townChunks.chunkX, townChunks.chunkZ, townChunks.world FROM townChunks LEFT JOIN towns ON towns.town_id = townChunks.town_id WHERE townChunks.chunkX = ? AND townChunks.chunkZ = ? AND townChunks.world = ?";
+    local parameters = {chunkX, chunkZ, Player:GetWorld():GetName()};
     local result = ExecuteStatement(sql, parameters);
     local town = InTown[Player:GetName()];
     if(result[1] and result[1][1] and result[1][1] ~= town) then
@@ -15,8 +15,8 @@ function CheckPlayerInTown(Player, chunkX, chunkZ)
 end
 
 function CheckBlockPermission(Player, BlockX, BlockZ)
-    local sql = "SELECT town_id FROM townChunks WHERE townChunks.chunkX = ? AND townChunks.chunkZ = ?";
-    local parameters = {math.floor(BlockX / 16), math.floor(BlockZ / 16)};
+    local sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+    local parameters = {math.floor(BlockX / 16), math.floor(BlockZ / 16), Player:GetWorld():GetName()};
     local town_id = ExecuteStatement(sql, parameters);
     if (town_id[1] and town_id[1][1]) then --The block being broken is part of a town
         local sql = "SELECT * FROM residents WHERE player_uuid = ? AND town_id = ?";
