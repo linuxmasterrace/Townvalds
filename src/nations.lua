@@ -24,6 +24,7 @@ function NationSync()
 				for dbKey, dbValue in pairs(result) do
 					if(dbValue[1] == value) then
 						inDatabase = true;
+						break;
 					end
 				end
 
