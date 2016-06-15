@@ -44,36 +44,33 @@ end
 
 --Creates a new nation
 function NationCreate(Split, Player)
-	local sql = "SELECT town_id FROM towns WHERE town_owner = ?";
-	local parameter = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true)};
-	local town_id = ExecuteStatement(sql, parameter)[1][1];
+	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+	local sql = "SELECT towns.town_id, towns.town_owner, towns.nation_id FROM towns INNER JOIN residents ON towns.town_id == residents.town_id WHERE residents.player_uuid = ?";
+	local parameter = {UUID};
+	local town = ExecuteStatement(sql, parameter)[1];
 
-	if (town_id == nil) then
+	if (town == nil) then
+		Player:SendMessageFailure("You can not create a nation if you're not part of a town!");
+	elseif not (town[2] == UUID) then
 		Player:SendMessageFailure("You can not create a nation if you're not the owner of a town!");
+	elseif not (town[3] == nil) then
+		Player:SendMessageFailure("Your town is already part of a nation!");
 	else
-		local sql = "SELECT nation_id FROM towns WHERE town_id = ?";
-		local parameter = {town_id};
-		local nation_id = ExecuteStatement(sql, parameter)[1][1];
+		local sql = "INSERT INTO nations (nation_name, nation_capital) VALUES (?, ?)";
+		local parameters = {Split[3], town[1]};
+		local nation_id = ExecuteStatement(sql, parameters);
 
-		if(nation_id == nil) then
-			local sql = "INSERT INTO nations (nation_name, nation_capital) VALUES (?, ?)";
-			local parameters = {Split[3], town_id};
-			local nation_id = ExecuteStatement(sql, parameters);
+		local sql = "UPDATE towns SET nation_id = ? WHERE town_id = ?";
+		local parameters = {nation_id, town[1]};
+		ExecuteStatement(sql, parameters);
 
-			local sql = "UPDATE towns SET nation_id = ? WHERE town_id = ?";
-			local parameters = {nation_id, town_id};
-			ExecuteStatement(sql, parameters);
-
-			cRoot:Get():ForEachWorld(
-			function(cWorld)
-				cWorld:GetScoreBoard():RegisterTeam(Split[3], Split[3], "", "");
-			end
-			);
-
-			Player:SendMessageSuccess("Created a new nation called " .. Split[3]);
-		else
-			Player:SendMessageFailure("Your town is already part of a nation!");
+		cRoot:Get():ForEachWorld(
+		function(cWorld)
+			cWorld:GetScoreBoard():RegisterTeam(Split[3], Split[3], "", "");
 		end
+		);
+
+		Player:SendMessageSuccess("Created a new nation called " .. Split[3]);
 	end
 	return true;
 end
@@ -82,67 +79,61 @@ end
 LeavingNation = {};
 function NationLeave(Split, Player)
 	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
-	local sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
+	local sql = "SELECT towns.town_id, towns.town_owner, towns.nation_id FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
 	local parameter = {UUID};
-	local town_id = ExecuteStatement(sql, parameter)[1][1];
+	local town = ExecuteStatement(sql, parameter)[1];
 
-	if(town_id == nil) then
+	if(town == nil) then
 		Player:SendMessageFailure("You can not leave nation if you're not part of a town!");
+	elseif not (town[2] == UUID) then
+		Player:SendMessageFailure("You can not leave a nation if you're not the owner of a town!");
+	elseif (town[3] == nil) then
+		Player:SendMessageFailure("Your town is not part of a nation!");
 	else
-		local sql = "SELECT town_owner, nation_id FROM towns WHERE town_id = ?";
-		local parameter = {town_id};
-		local town = ExecuteStatement(sql, parameter)[1];
+		local sql = "SELECT COUNT(*) FROM towns WHERE nation_id = ?";
+		local parameter = {town[3]};
+		local townInNationCount = ExecuteStatement(sql, parameter)[1][1];
 
-		if(town[1] == nil) then
-			Player:SendMessageFailure("You can not leave a nation if you're not the owner of a town!");
-		elseif(town[2] == nil) then
-			Player:SendMessageFailure("Your town is not part of a nation!");
-		else
-			local sql = "SELECT COUNT(*) FROM towns WHERE nation_id = ?";
-			local parameter = {town[2]};
-			local townInNationCount = ExecuteStatement(sql, parameter)[1][1];
+		if not (LeavingNation[UUID] == nil) then --The mayor wants to leave the nation
+			local sql = "SELECT nation_name FROM nations WHERE nation_id = ?";
+			local parameter = {town[3]};
+			local nationName = ExecuteStatement(sql, parameter)[1][1];
 
-			if not (LeavingNation[UUID] == nil) then --The mayor wants to leave the nation
-				local sql = "SELECT nation_name FROM nations WHERE nation_id = ?";
-				local parameter = {town[2]};
-				local nationName = ExecuteStatement(sql, parameter)[1][1];
+			if(townInNationCount == 1) then
+				local sql = "UPDATE towns SET nation_id = NULL WHERE town_owner = ?";
+				local parameter = {UUID};
+				ExecuteStatement(sql, parameter);
 
-				if(townInNationCount == 1) then
-					local sql = "UPDATE towns SET nation_id = NULL WHERE town_owner = ?";
-					local parameter = {UUID};
-					ExecuteStatement(sql, parameter);
+				local sql = "DELETE FROM nations WHERE nation_id = ?";
+				local parameter = {town[3]};
+				ExecuteStatement(sql, parameter);
 
-					local sql = "DELETE FROM nations WHERE nation_id = ?";
-					local parameter = {town[2]};
-					ExecuteStatement(sql, parameter);
-
-					--Delete the nation from each world's team list
-					cRoot:Get():ForEachWorld(
-					function(cWorld)
-						cWorld:GetScoreBoard():RemoveTeam(nationName);
-					end
-					);
-
-					Player:GetWorld():BroadcastChatInfo("The nation " .. nationName .. " was abandoned!");
-				else
-					local sql = "UPDATE towns SET nation_id = NULL WHERE town_id = ?";
-					local parameter = {town_id};
-					ExecuteStatement(sql, parameter);
-
-					Player:SendMessageSuccess("Your town left the nation");
+				--Delete the nation from each world's team list
+				cRoot:Get():ForEachWorld(
+				function(cWorld)
+					cWorld:GetScoreBoard():RemoveTeam(nationName);
 				end
-				LeavingNation[UUID] = nil;
+				);
+
+				Player:GetWorld():BroadcastChatInfo("The nation " .. nationName .. " was abandoned!");
 			else
-				if(townInNationCount == 1) then
-					Player:SendMessageInfo("Since your town is the last member of this nation, leaving it will cause it to be removed.");
-					Player:SendMessageInfo("Use `/nation leave` again if you wish to continue.");
-				else
-					Player:SendMessageInfo("Are you sure you want your town to leave the nation?");
-					Player:SendMessageInfo("Use `/nation leave` again if you wish to continue.");
-				end
+				local sql = "UPDATE towns SET nation_id = NULL WHERE town_id = ?";
+				local parameter = {town[1]};
+				ExecuteStatement(sql, parameter);
 
-				LeavingNation[UUID] = true;
+				Player:SendMessageSuccess("Your town left the nation");
 			end
+			LeavingNation[UUID] = nil;
+		else
+			if(townInNationCount == 1) then
+				Player:SendMessageInfo("Since your town is the last member of this nation, leaving it will cause it to be removed.");
+				Player:SendMessageInfo("Use `/nation leave` again if you wish to continue.");
+			else
+				Player:SendMessageInfo("Are you sure you want your town to leave the nation?");
+				Player:SendMessageInfo("Use `/nation leave` again if you wish to continue.");
+			end
+
+			LeavingNation[UUID] = true;
 		end
 	end
 
