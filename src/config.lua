@@ -9,6 +9,9 @@ function LoadConfig()
 	if not (ini:FindKey("General")) then
 		ini:AddKeyName("General");
 	end
+	if not (ini:FindKey("Nations")) then
+		ini:AddKeyName("Nations");
+	end
 	if not (ini:FindKey("Towns")) then
 		ini:AddKeyName("Towns");
 	end
@@ -27,7 +30,6 @@ function LoadConfig()
 	ini:AddKeyComment("Towns", "If no expiration is wanted, set it to 0");
 	ini:AddKeyComment("Towns", "");
 	newconfig.invitation_duration = ini:GetValueSet("Towns", "invitation_duration", "0");
-
 	ini:AddKeyComment("Towns", "min_distance_from_other_towns - The minimum amount of chunks a new town has to be from existing towns");
 	newconfig.min_distance_from_other_towns = ini:GetValueSetI("Towns", "min_distance_from_other_towns", "5");
 

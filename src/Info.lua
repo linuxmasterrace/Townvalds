@@ -31,6 +31,30 @@ g_PluginInfo =
 				}
 			}
 		},
+		["/nation"] =
+		{
+			Subcommands =
+			{
+				new =
+				{
+					Handler = NationCreate,
+					HelpString = "Creates a new nation",
+					Permission = "townvalds.nation.new",
+				},
+				leave =
+				{
+					Handler = NationLeave,
+					HelpString = "Removes the town from the nation",
+					Permission = "townvalds.nation.leave",
+				},
+				list =
+				{
+					Handler = NationList,
+					HelpString = "Prints a list of all nations",
+					Permission = "townvalds.nation.list",
+				}
+			}
+		},
 		["/town"] =
 		{
 			Subcommands =
@@ -81,12 +105,12 @@ g_PluginInfo =
 							HelpString = "Toggles explosions in the current town",
 							Permission = "townvalds.town.toggle"
 						},
-                        pvp =
-                        {
-                            Handler = TownTogglePVP,
-                            HelpString = "Toggles PVP in the current town",
-                            Permission = "townvalds.town.toggle"
-                        }
+						pvp =
+						{
+							Handler = TownTogglePVP,
+							HelpString = "Toggles PVP in the current town",
+							Permission = "townvalds.town.toggle"
+						}
 					}
 				},
 				list =
@@ -163,6 +187,21 @@ g_PluginInfo =
 		{
 			Description = "Allows the player to view information about a resident",
 			RecommendedGroups = "admins",
+		},
+		["townvalds.nation.list"] =
+		{
+			Description = "Allows the player to see a list of existing nations",
+			RecommendedGroups = "default",
+		},
+		["townvalds.nation.new"] =
+		{
+			Description = "Allows the player to create a new nation",
+			RecommendedGroups = "default",
+		},
+		["townvalds.nation.leave"] =
+		{
+			Description = "Allows the player to remove his/her town from a nnation",
+			RecommendedGroups = "default",
 		},
 		["townvalds.town.new"] =
 		{
