@@ -157,3 +157,37 @@ function NationList(Split, Player)
 
 	return true;
 end
+
+--Toggles friendly fire in the nation
+function NationToggleFriendlyFire(Split, Player)
+	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+	local sql = "SELECT towns.town_id, towns.nation_id FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
+	local parameter = {UUID};
+	local town = ExecuteStatement(sql, parameter)[1];
+
+	if (town == nil) then
+		Player:SendMessageFailure("You're not part of a town");
+	elseif (town[2] == nil) then
+		Player:SendMessageFailure("You're town is not part of a nation");
+	else
+		local sql = "SELECT nation_name, nation_capital FROM nations WHERE nation_id = ?";
+		local parameter = {town[2]};
+		local nation = ExecuteStatement(sql, parameter)[1];
+
+		local cTeam = Player:GetWorld():GetScoreBoard():GetTeam(nation[1]);
+
+		if not(nation[2] == town[2]) then
+			Player:SendMessageFailure("You're town is not the capital of this nation");
+		else
+			if(cTeam:AllowsFriendlyFire()) then
+				cTeam:SetFriendlyFire(false);
+				Player:SendMessageSuccess("Friendly fire is now disabled");
+			else
+				cTeam:SetFriendlyFire(true);
+				Player:SendMessageSuccess("Friendly fire is now enabled")
+			end
+		end
+	end
+
+	return true;
+end

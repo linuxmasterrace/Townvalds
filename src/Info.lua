@@ -52,6 +52,19 @@ g_PluginInfo =
 					Handler = NationList,
 					HelpString = "Prints a list of all nations",
 					Permission = "townvalds.nation.list",
+				},
+				["toggle"] =
+				{
+					Subcommands =
+					{
+						friendlyfire =
+						{
+							Alias = {"ff"},
+							Handler = NationToggleFriendlyFire,
+							HelpString = "Toggles friendly fire in the current nation",
+							Permission = "townvalds.nation.toggle",
+						},
+					}
 				}
 			}
 		},
@@ -201,6 +214,11 @@ g_PluginInfo =
 		["townvalds.nation.leave"] =
 		{
 			Description = "Allows the player to remove his/her town from a nnation",
+			RecommendedGroups = "default",
+		},
+		["townvalds.nation.toggle"] =
+		{
+			Description = "Allows the player to toggle nation features",
 			RecommendedGroups = "default",
 		},
 		["townvalds.town.new"] =
