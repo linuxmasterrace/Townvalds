@@ -168,7 +168,7 @@ function NationToggleFriendlyFire(Split, Player)
 	if (town == nil) then
 		Player:SendMessageFailure("You're not part of a town");
 	elseif (town[2] == nil) then
-		Player:SendMessageFailure("You're town is not part of a nation");
+		Player:SendMessageFailure("Your town is not part of a nation");
 	else
 		local sql = "SELECT nation_name, nation_capital FROM nations WHERE nation_id = ?";
 		local parameter = {town[2]};
@@ -177,7 +177,7 @@ function NationToggleFriendlyFire(Split, Player)
 		local cTeam = Player:GetWorld():GetScoreBoard():GetTeam(nation[1]);
 
 		if not(nation[2] == town[2]) then
-			Player:SendMessageFailure("You're town is not the capital of this nation");
+			Player:SendMessageFailure("Your town is not the capital of this nation");
 		else
 			if(cTeam:AllowsFriendlyFire()) then
 				cTeam:SetFriendlyFire(false);
