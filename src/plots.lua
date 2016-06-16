@@ -23,7 +23,7 @@ function PlotToggleMobs(Split, Player)
 		else
 			if not(Split[4] == nil) then --The user wants the plot to inherit the town value
 				if not(Split[4] == "inherit") then
-					Player:SendMessageFailure("This argument is not understood, you probably meant");
+					Player:SendMessageFailure("This argument is not understood");
 					return true;
 				else
 					toggle = 2;
