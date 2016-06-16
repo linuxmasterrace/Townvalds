@@ -1,3 +1,67 @@
+function PlotClaim(Split, Player)
+	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+
+	local sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
+	local parameter = {UUID};
+	local resident = ExecuteStatement(sql, parameter)[1];
+
+	local sql = "SELECT townChunk_id, town_id, owner FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?" ;
+	local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
+	local plot = ExecuteStatement(sql, parameters)[1];
+
+	if(plot == nil) then
+		Player:SendMessageFailure("You can not claim a plot if you're not inside a town");
+	elseif(resident[1] == nil or not plot[2] == resident[1]) then
+		Player:SendMessageFailure("You can not claim a plot if you're not part of this town")
+	elseif not(plot[3] == nil) then
+		local sql = "SELECT player_uuid, player_name FROM residents WHERE player_uuid = ?";
+		local parameter = {plot[3]};
+		local owner = ExecuteStatement(sql, parameter)[1];
+
+		if(owner[1] == UUID) then
+			Player:SendMessageFailure("You already claimed this plot");
+		else
+			Player:SendMessageFailure("This plot is already claimed by " .. owner[2]);
+		end
+	else
+		local sql = "UPDATE townChunks SET owner = ? WHERE townChunk_id = ?";
+		local parameter = {UUID, plot[1]};
+		ExecuteStatement(sql, parameter);
+
+		Player:SendMessageSuccess("You succesfully claimed this plot");
+	end
+
+	return true;
+end
+
+function PlotUnclaim(Split, Player)
+	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+
+	local sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
+	local parameter = {UUID};
+	local resident = ExecuteStatement(sql, parameter)[1];
+
+	local sql = "SELECT townChunk_id, town_id, owner FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?" ;
+	local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
+	local plot = ExecuteStatement(sql, parameters)[1];
+
+	if(plot == nil) then
+		Player:SendMessageFailure("You can not unclaim a plot if you're not inside a town");
+	elseif(resident[1] == nil or not plot[2] == resident[1]) then
+		Player:SendMessageFailure("You can not unclaim a plot if you're not part of this town")
+	elseif (plot[3] == nil or not plot[3] == UUID) then
+		Player:SendMessageFailure("You can not unclaim a plot that is not yours");
+	else
+		local sql = "UPDATE townChunks SET owner = NULL WHERE townChunk_id = ?";
+		local parameter = {plot[1]};
+		ExecuteStatement(sql, parameter);
+
+		Player:SendMessageSuccess("You succesfully unlcaimed this plot");
+	end
+
+	return true;
+end
+
 function PlotToggleMobs(Split, Player)
 	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
 

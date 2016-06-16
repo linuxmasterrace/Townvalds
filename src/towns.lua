@@ -226,6 +226,10 @@ function TownLeave(Split, Player)
 	        parameter = {UUID};
 	        ExecuteStatement(sql, parameter);
 
+			sql = "UPDATE townChunks SET owner = NULL WHERE owner = ?";
+			parameter = {UUID};
+			ExecuteStatement(sql, parameter);
+
 			sql = "SELECT player_uuid FROM residents WHERE town_id = ?";
 			parameter = {town_id};
 			local players = ExecuteStatement(sql, parameter);
