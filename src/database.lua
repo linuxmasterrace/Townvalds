@@ -1,8 +1,8 @@
 function CreateDatabase()
 	-- Create tables
 	local sqlCreate = {};
-	sqlCreate[1] = "CREATE TABLE IF NOT EXISTS towns (town_id INTEGER PRIMARY KEY AUTOINCREMENT, town_name STRING NOT NULL UNIQUE, town_owner STRING NOT NULL UNIQUE, nation_id INTEGER, town_explosions_enabled INTEGER, town_pvp_enabled INTEGER)";
-	sqlCreate[2] = "CREATE TABLE IF NOT EXISTS townChunks (townChunk_id INTEGER PRIMARY KEY, town_id INTEGER, chunkX INTEGER, chunkZ INTEGER)";
+	sqlCreate[1] = "CREATE TABLE IF NOT EXISTS towns (town_id INTEGER PRIMARY KEY AUTOINCREMENT, town_name STRING NOT NULL UNIQUE, town_owner STRING NOT NULL UNIQUE, nation_id INTEGER, town_explosions_enabled INTEGER DEFAULT 0, town_pvp_enabled INTEGER DEFAULT 0, town_mobs_enabled INTEGER DEFAULT 0)";
+	sqlCreate[2] = "CREATE TABLE IF NOT EXISTS townChunks (townChunk_id INTEGER PRIMARY KEY, town_id INTEGER, chunkX INTEGER, chunkZ INTEGER, plot_mobs_enabled INTEGER DEFAULT 2)";
 	sqlCreate[3] = "CREATE TABLE IF NOT EXISTS residents (player_uuid STRING UNIQUE, player_name STRING UNIQUE, town_id INTEGER, town_rank STRING, last_online INTEGER)";
 	sqlCreate[4] = "CREATE TABLE IF NOT EXISTS nations (nation_id INTEGER PRIMARY KEY AUTOINCREMENT, nation_name STRING NOT NULL UNIQUE, nation_capital INTEGER NOT NULL UNIQUE)"
 	sqlCreate[5] = "CREATE TABLE IF NOT EXISTS invitations (invitation_id INTEGER PRIMARY KEY, player_uuid STRING, town_id INTEGER, invitation_date DATETIME DEFAULT CURRENT_TIMESTAMP)";
