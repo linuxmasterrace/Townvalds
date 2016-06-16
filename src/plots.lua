@@ -11,7 +11,7 @@ function PlotClaim(Split, Player)
 
 	if(plot == nil) then
 		Player:SendMessageFailure("You can not claim a plot if you're not inside a town");
-	elseif(resident[1] == nil or not plot[2] == resident[1]) then
+	elseif((resident[1] == nil) or not (plot[2] == resident[1])) then
 		Player:SendMessageFailure("You can not claim a plot if you're not part of this town")
 	elseif not(plot[3] == nil) then
 		local sql = "SELECT player_uuid, player_name FROM residents WHERE player_uuid = ?";
@@ -45,11 +45,12 @@ function PlotUnclaim(Split, Player)
 	local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 	local plot = ExecuteStatement(sql, parameters)[1];
 
+	LOG(plot[3] .. " " .. UUID);
 	if(plot == nil) then
 		Player:SendMessageFailure("You can not unclaim a plot if you're not inside a town");
-	elseif(resident[1] == nil or not plot[2] == resident[1]) then
+	elseif((resident[1] == nil) or not (plot[2] == resident[1])) then
 		Player:SendMessageFailure("You can not unclaim a plot if you're not part of this town")
-	elseif (plot[3] == nil or not plot[3] == UUID) then
+	elseif ((plot[3] == nil) or not (plot[3] == UUID)) then
 		Player:SendMessageFailure("You can not unclaim a plot that is not yours");
 	else
 		local sql = "UPDATE townChunks SET owner = NULL WHERE townChunk_id = ?";
