@@ -29,7 +29,7 @@ function PlotToggleMobs(Split, Player)
 					toggle = 2;
 				end
 			else
-				if(plot[4] == 2 and plot[3] == 1) then --plot[2] at 2 means it inherits the town status
+				if(plot[4] == 2 and plot[3] == 1) then --plot[4] at 2 means it inherits the town status
 					toggle = 0;
 				elseif(plot[4] == 2 and plot[3] == 0) then
 					toggle = 1;
