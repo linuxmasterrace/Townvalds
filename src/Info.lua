@@ -150,6 +150,18 @@ g_PluginInfo =
 		{
 			Subcommands =
 			{
+				claim =
+				{
+					Handler = PlotClaim,
+					HelpString = "Claims the plot for the player",
+					Permission = "townvalds.plot.claim",
+				},
+				unclaim =
+				{
+					Handler = PlotUnclaim,
+					HelpString = "Unclaims the plot",
+					Permission = "townvalds.plot.unclaim",
+				},
 				["toggle"] =
 				{
 					Subcommands =
@@ -269,6 +281,15 @@ g_PluginInfo =
 		{
 			Description = "Allows the player to toggle town features",
 			RecommendedGroups = "default",
+		},
+		["townvalds.plot.claim"] =
+		{
+			Description = "Allows the player to claim a plot",
+			RecommendedGroups = "default",
+		},
+		["townvalds.plot.unclaim"] =
+		{
+			Description = "Allows the player to unclaim a plot"
 		},
 		["townvalds.plot.toggle"] =
 		{
