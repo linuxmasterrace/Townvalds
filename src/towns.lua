@@ -86,24 +86,35 @@ function TownClaim(Split, Player)
 end
 
 function TownUnclaim(Split, Player)
-	if not (InTown[Player:GetName()] == nil) then
-		local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
-
-		sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?";
-		parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
-		local result = ExecuteStatement(sql, parameters)[1][1];
-
-		if(town_id == result) then
-			sql = "DELETE FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ? AND world = ?";
-			parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
-			ExecuteStatement(sql, parameters);
-
-			Player:SendMessageSuccess("Land succesfully unclaimed.");
-		else
-			Player:SendMessageFailure("This is not your town!");
-		end
+	if (InTown[Player:GetName()] == nil) then
+		Player:SendMessageFailure("You can't unclaim land if you're not inside a town!");
 	else
-		Player:SendMessageFailure("You can't unclaim land if you're not in a town!");
+		local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+		local town_id = GetPlayerTown(UUID);
+
+		local sql = "SELECT town_owner FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
+		local parameter = {UUID};
+		local town = ExecuteStatement(sql, parameter)[1];
+
+		if(town == nil) then
+			Player:SendMessageFailure("You can't unclaim land if you're not part of this town!");
+		elseif not (town[1] == UUID) then
+			Player:SendMessageFailure("You can't unclaim land if you're not the mayor of this town!");
+		else
+			local sql = "SELECT COUNT(*) FROM townChunks WHERE town_id = ?";
+			local parameter = {town_id};
+			local chunkCount = ExecuteStatement(sql, parameter)[1][1];
+
+			if(chunkCount == 1) then
+				Player:SendMessageFailure("Since this is the last chunk of this town, you can't remove it!");
+			else
+				local sql = "DELETE FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ? AND world = ?";
+				local parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
+				ExecuteStatement(sql, parameters);
+
+				Player:SendMessageSuccess("Land succesfully unclaimed.");
+			end
+		end
 	end
 
 	return true;
