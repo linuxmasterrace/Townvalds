@@ -421,14 +421,16 @@ end
 function TownToggleMobs(Split, Player)
 	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
 
-	local sql = "SELECT town_id, town_mobs_enabled FROM towns WHERE town_owner = ?";
+	local sql = "SELECT towns.town_id, towns.town_owner, towns.town_mobs_enabled FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
 	local parameter = {UUID};
 	local town = ExecuteStatement(sql, parameter)[1];
 
 	if(town == nil) then
+		Player:SendMessageFailure("You can't toggle if you're not part of a town!");
+	elseif not(town[2] == UUID) then
 		Player:SendMessageFailure("You can't toggle if you're not the owner of a town!");
 	else
-		if(town[2] == 0) then
+		if(town[3] == 0) then
 			local sql = "UPDATE towns SET town_mobs_enabled = 1 WHERE town_id = ?";
 			local parameter = {town[1]};
 			ExecuteStatement(sql, parameter);
