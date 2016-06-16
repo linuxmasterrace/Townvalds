@@ -52,6 +52,19 @@ g_PluginInfo =
 					Handler = NationList,
 					HelpString = "Prints a list of all nations",
 					Permission = "townvalds.nation.list",
+				},
+				["toggle"] =
+				{
+					Subcommands =
+					{
+						friendlyfire =
+						{
+							Alias = {"ff"},
+							Handler = NationToggleFriendlyFire,
+							HelpString = "Toggles friendly fire in the current nation",
+							Permission = "townvalds.nation.toggle",
+						},
+					}
 				}
 			}
 		},
@@ -110,7 +123,13 @@ g_PluginInfo =
 							Handler = TownTogglePVP,
 							HelpString = "Toggles PVP in the current town",
 							Permission = "townvalds.town.toggle"
-						}
+						},
+						mobs =
+						{
+							Handler = TownToggleMobs,
+							HelpString = "Toggles mob spawning in the current town",
+							Permission = "townvalds.town.toggle"
+						},
 					}
 				},
 				list =
@@ -125,6 +144,24 @@ g_PluginInfo =
 					HelpString = "Lists available ranks, or grant and remove a rank to a resident of the town",
 					Permission = "townvalds.town.rank",
 				},
+			}
+		},
+		["/plot"] =
+		{
+			Subcommands =
+			{
+				["toggle"] =
+				{
+					Subcommands =
+					{
+						mobs =
+						{
+							Handler = PlotToggleMobs,
+							HelpString = "Toggles mob spawning in the current plot",
+							Permission = "townvalds.plot.toggle"
+						}
+					}
+				}
 			}
 		},
 		["/resident"] =
@@ -203,6 +240,11 @@ g_PluginInfo =
 			Description = "Allows the player to remove his/her town from a nnation",
 			RecommendedGroups = "default",
 		},
+		["townvalds.nation.toggle"] =
+		{
+			Description = "Allows the player to toggle nation features",
+			RecommendedGroups = "default",
+		},
 		["townvalds.town.new"] =
 		{
 			Description = "Allows the player to create a new town",
@@ -221,6 +263,16 @@ g_PluginInfo =
 		["townvalds.town.rank"] =
 		{
 			Description = "Lists available ranks, or grant and remove a rank to a resident of the town",
+			RecommendedGroups = "default",
+		},
+		["townvalds.town.toggle"] =
+		{
+			Description = "Allows the player to toggle town features",
+			RecommendedGroups = "default",
+		},
+		["townvalds.plot.toggle"] =
+		{
+			Description = "Allows the player to toggle plot features",
 			RecommendedGroups = "default",
 		},
 		["townvalds.chat.switch"] =
