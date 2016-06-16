@@ -275,7 +275,7 @@ function TownToggleExplosions(Split, Player)
 		local sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
 		local parameters = {Player:GetChunkX(), Player:GetChunkZ()};
 		local result = ExecuteStatement(sql, parameters)[1][1];
-		
+
 		if(town_id == result) then
 			local sql = "SELECT town_explosions_enabled FROM towns WHERE town_id = ?";
 			local parameters = {town_id};
@@ -392,7 +392,7 @@ function TownTogglePVP(Split, Player)
 		local sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
 		local parameters = {Player:GetChunkX(), Player:GetChunkZ()};
 		local result = ExecuteStatement(sql, parameters)[1][1];
-		
+
 		if(town_id == result) then
 			local sql = "SELECT town_pvp_enabled FROM towns WHERE town_id = ?";
 			local parameters = {town_id};
@@ -414,6 +414,35 @@ function TownTogglePVP(Split, Player)
 		end
 	else
 		Player:SendMessageFailure("You can't toggle if you're not in a town!");
+	end
+	return true;
+end
+
+function TownToggleMobs(Split, Player)
+	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+
+	local sql = "SELECT towns.town_id, towns.town_owner, towns.town_mobs_enabled FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
+	local parameter = {UUID};
+	local town = ExecuteStatement(sql, parameter)[1];
+
+	if(town == nil) then
+		Player:SendMessageFailure("You can't toggle if you're not part of a town!");
+	elseif not(town[2] == UUID) then
+		Player:SendMessageFailure("You can't toggle if you're not the owner of a town!");
+	else
+		if(town[3] == 0) then
+			local sql = "UPDATE towns SET town_mobs_enabled = 1 WHERE town_id = ?";
+			local parameter = {town[1]};
+			ExecuteStatement(sql, parameter);
+
+			Player:SendMessageSuccess("Mob spawning enabled");
+		else
+			local sql = "UPDATE towns SET town_mobs_enabled = 0 WHERE town_id = ?";
+			local parameter = {town[1]};
+			ExecuteStatement(sql, parameter);
+
+			Player:SendMessageSuccess("Mob spawning disabled");
+		end
 	end
 	return true;
 end
