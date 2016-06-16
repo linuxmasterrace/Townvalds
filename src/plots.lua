@@ -9,8 +9,8 @@ function PlotToggleMobs(Split, Player)
 		Player:SendMessageFailure("You can't toggle if you're not part of a town");
 		return true;
 	else
-		local sql = "SELECT towns.town_id, towns.town_owner, towns.town_mobs_enabled, townChunks.plot_mobs_enabled FROM towns INNER JOIN townChunks ON towns.town_id = townChunks.town_id WHERE townChunks.chunkX = ? AND townChunks.chunkZ = ?";
-		local parameters = {Player:GetChunkX(), Player:GetChunkZ()};
+		local sql = "SELECT towns.town_id, towns.town_owner, towns.town_mobs_enabled, townChunks.plot_mobs_enabled FROM towns INNER JOIN townChunks ON towns.town_id = townChunks.town_id WHERE townChunks.chunkX = ? AND townChunks.chunkZ = ? AND townChunks.world = ?";
+		local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 		local plot = ExecuteStatement(sql, parameters)[1];
 
 		local toggle;
@@ -42,20 +42,20 @@ function PlotToggleMobs(Split, Player)
 		end
 
 		if(toggle == 2) then --The user wants the plot to inherit the town value
-			local sql = "UPDATE townChunks SET plot_mobs_enabled = 2 WHERE chunkX = ? AND chunkZ = ?";
-			local parameters = {Player:GetChunkX(), Player:GetChunkZ()};
+			local sql = "UPDATE townChunks SET plot_mobs_enabled = 2 WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+			local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 			ExecuteStatement(sql, parameters);
 
 			Player:SendMessageSuccess("Mob spawning now inherits the town value");
 		elseif(toggle == 1) then --The user wants the plot to have mob spawning enabled
-			local sql = "UPDATE townChunks SET plot_mobs_enabled = 1 WHERE chunkX = ? AND chunkZ = ?";
-			local parameters = {Player:GetChunkX(), Player:GetChunkZ()};
+			local sql = "UPDATE townChunks SET plot_mobs_enabled = 1 WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+			local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 			ExecuteStatement(sql, parameters);
 
 			Player:SendMessageSuccess("Mob spawning is now enabled in this plot");
 		else --The user wants the plot to have mob spawning disabled
-			local sql = "UPDATE townChunks SET plot_mobs_enabled = 0 WHERE chunkX = ? AND chunkZ = ?";
-			local parameters = {Player:GetChunkX(), Player:GetChunkZ()};
+			local sql = "UPDATE townChunks SET plot_mobs_enabled = 0 WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+			local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 			ExecuteStatement(sql, parameters);
 
 			Player:SendMessageSuccess("Mob spawning is now disabled in this plot");

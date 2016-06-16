@@ -1,6 +1,6 @@
 function OnExploding(World, ExplosionSize, CanCauseFire, X, Y, Z, Source, SourceData)
-	local town_sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
-	local town_parameters = {math.floor(X/16), math.floor(Z/16)};
+	local town_sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+	local town_parameters = {math.floor(X/16), math.floor(Z/16), World:GetName()};
 	if ExecuteStatement(town_sql, town_parameters)[1] ~= nil then
 		local town_id = ExecuteStatement(town_sql, town_parameters)[1][1];
 		local explosion_sql = "SELECT town_explosions_enabled FROM towns WHERE town_id = ?";

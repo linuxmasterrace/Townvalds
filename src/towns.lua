@@ -26,8 +26,8 @@ function TownCreate(Split, Player)
                 parameters = {Split[3], UUID, 0, 0};
 				local town_id = ExecuteStatement(sql, parameters);
 
-                sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)";
-                parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()};
+                sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ, world) VALUES (?, ?, ?, ?)";
+                parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
                 ExecuteStatement(sql, parameters);
 
                 local sql = "UPDATE residents SET town_id = ? WHERE player_uuid = ?";
@@ -64,8 +64,8 @@ function TownClaim(Split, Player)
 				local result = ExecuteStatement(sql, parameters)[1];
 
 				if not (result == nil) then -- The chunk to be claimed is next to an already existing chunk of the town
-					sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ) VALUES (?, ?, ?)";
-					parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()};
+					sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ, world) VALUES (?, ?, ?, ?)";
+					parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 					ExecuteStatement(sql, parameters);
 
 					Player:SendMessageSuccess("Land succesfully claimed");
@@ -89,13 +89,13 @@ function TownUnclaim(Split, Player)
 	if not (InTown[Player:GetName()] == nil) then
 		local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
 
-		sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
-		parameters = {Player:GetChunkX(), Player:GetChunkZ()};
+		sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+		parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 		local result = ExecuteStatement(sql, parameters)[1][1];
 
 		if(town_id == result) then
-			sql = "DELETE FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ?";
-			parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ()};
+			sql = "DELETE FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ? AND world = ?";
+			parameters = {town_id, Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 			ExecuteStatement(sql, parameters);
 
 			Player:SendMessageSuccess("Land succesfully unclaimed.");
@@ -272,8 +272,8 @@ function TownToggleExplosions(Split, Player)
 	if not (InTown[Player:GetName()] == nil) then
 		local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
 
-		local sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
-		local parameters = {Player:GetChunkX(), Player:GetChunkZ()};
+		local sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+		local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 		local result = ExecuteStatement(sql, parameters)[1][1];
 
 		if(town_id == result) then
@@ -389,8 +389,8 @@ function TownTogglePVP(Split, Player)
     if not (InTown[Player:GetName()] == nil) then
 		local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
 
-		local sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
-		local parameters = {Player:GetChunkX(), Player:GetChunkZ()};
+		local sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+		local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 		local result = ExecuteStatement(sql, parameters)[1][1];
 
 		if(town_id == result) then
