@@ -44,7 +44,7 @@ end
 
 --Creates a new nation
 function NationCreate(Split, Player)
-	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+	local UUID = Player:GetUUID();
 	local sql = "SELECT towns.town_id, towns.town_owner, towns.nation_id FROM towns INNER JOIN residents ON towns.town_id == residents.town_id WHERE residents.player_uuid = ?";
 	local parameter = {UUID};
 	local town = ExecuteStatement(sql, parameter)[1];
@@ -78,7 +78,7 @@ end
 --Removes the player's town from the nation
 LeavingNation = {};
 function NationLeave(Split, Player)
-	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+	local UUID = Player:GetUUID();
 	local sql = "SELECT towns.town_id, towns.town_owner, towns.nation_id FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
 	local parameter = {UUID};
 	local town = ExecuteStatement(sql, parameter)[1];
@@ -170,7 +170,7 @@ end
 
 --Toggles friendly fire in the nation
 function NationToggleFriendlyFire(Split, Player)
-	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+	local UUID = Player:GetUUID();
 	local sql = "SELECT towns.town_id, towns.nation_id FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
 	local parameter = {UUID};
 	local town = ExecuteStatement(sql, parameter)[1];

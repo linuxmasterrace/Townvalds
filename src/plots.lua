@@ -1,5 +1,5 @@
 function PlotClaim(Split, Player)
-	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+	local UUID = Player:GetUUID();
 
 	local sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
 	local parameter = {UUID};
@@ -35,7 +35,7 @@ function PlotClaim(Split, Player)
 end
 
 function PlotUnclaim(Split, Player)
-	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+	local UUID = Player:GetUUID();
 
 	local sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
 	local parameter = {UUID};
@@ -64,7 +64,7 @@ function PlotUnclaim(Split, Player)
 end
 
 function PlotToggleMobs(Split, Player)
-	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+	local UUID = Player:GetUUID();
 
 	local sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
 	local parameter = {UUID};
