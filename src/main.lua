@@ -40,7 +40,11 @@ function Initialize(Plugin)
 
 	--Compare players already online before loading the plugin with the database and sync the two
 	LOG("[" .. PLUGIN:GetName() .. "] Syncing online players with the database");
-	PlayerSync();
+	cRoot:Get():ForEachPlayer(
+	function (Player)
+		OnPlayerJoined(Player);
+	end
+	);
 
 	--Compare existing nations to nations existing in the database and sync the two
 	LOG("[" .. PLUGIN:GetName() .. "] Syncing nations with the database");
@@ -54,32 +58,4 @@ end
 function OnDisable() -- Gets called when the plugin is unloaded, mostly when shutting down the server
 	LOG("[" .. PLUGIN:GetName() .. "] Disabling " .. PLUGIN:GetName() .. " v" .. PLUGIN:GetVersion());
 	db:close();
-end
-
-function PlayerSync()
-	local sql = "SELECT player_uuid FROM residents";
-	local players = ExecuteStatement(sql);
-
-	cRoot:Get():ForEachPlayer(
-	function (cPlayer)
-		local UUID = cMojangAPI:GetUUIDFromPlayerName(cPlayer:GetName(), true);
-		local inDatabase = false;
-
-		for key, value in pairs(players) do
-			if(value[1] == UUID) then
-				inDatabase = true;
-				break;
-			end
-		end
-
-		if not (inDatabase) then
-			local sql = "INSERT OR IGNORE INTO residents (player_uuid, player_name, town_id, town_rank, last_online) VALUES (?, ?, NULL, NULL, datetime(\"now\"))";
-		    local parameters = {UUID, cPlayer:GetName()};
-			ExecuteStatement(sql, parameters);
-
-			Channel[UUID] = "global"; --Set their chat channel to the default, global
-		end
-	end
-	);
-	return true;
 end
