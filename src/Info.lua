@@ -184,7 +184,7 @@ g_PluginInfo =
 		},
 		["/switchchat"] =
 		{
-			Alias = {"/sc", "/gc", "/tc", "/lc"},
+			Alias = {"/sc", "/gc", "/nc", "/tc", "/lc"},
 			Handler = SwitchChat,
 			HelpString = "Switches the active chat channel for the user",
 			Permission = "townvalds.chat.switch",

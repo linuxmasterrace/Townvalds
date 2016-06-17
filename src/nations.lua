@@ -95,6 +95,16 @@ function NationLeave(Split, Player)
 		local townInNationCount = ExecuteStatement(sql, parameter)[1][1];
 
 		if not (LeavingNation[UUID] == nil) then --The mayor wants to leave the nation
+			local sql = "SELECT player_uuid FROM residents WHERE town_id = ?";
+			local parameter = {town[1]};
+			local players = ExecuteStatement(sql, parameter);
+
+			for key, value in pairs(players) do
+				if (Channel[value[1]] == "nation") then
+					Channel[value[1]] = "town";
+				end
+			end
+
 			local sql = "SELECT nation_name FROM nations WHERE nation_id = ?";
 			local parameter = {town[3]};
 			local nationName = ExecuteStatement(sql, parameter)[1][1];

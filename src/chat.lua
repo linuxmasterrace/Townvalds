@@ -4,7 +4,23 @@ function OnChat(Player, Message)
 		local senderName = Player:GetName();
 
 		--If the player is in the specified channel, send it to the players having that channel active
-		if(Channel[UUID] == "town") then --Town channel
+		if(Channel[UUID] == "nation") then --Nation channel
+			local sql = "SELECT nations.nation_id FROM nations INNER JOIN towns ON nations.nation_id = towns.nation_id INNER JOIN residents ON towns.town_id = residents.town_id WHERE player_uuid = ?";
+			local parameter = {UUID};
+			local nation = ExecuteStatement(sql, parameter)[1];
+
+			local sql = "SELECT player_uuid FROM residents INNER JOIN towns ON residents.town_id = towns.town_id WHERE towns.nation_id = ?";
+			local parameter = {nation[1]};
+			local players = ExecuteStatement(sql, parameter);
+
+			for key, value in pairs(players) do
+				cRoot:Get():DoWithPlayerByUUID(value[1],
+				function (Player)
+					Player:SendMessage("@b[Nation] @f" .. senderName .. ": " .. Message);
+				end
+				);
+			end
+		elseif(Channel[UUID] == "town") then --Town channel
 			sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
 			parameter = {UUID};
 			local town_id = ExecuteStatement(sql, parameter)[1][1];
@@ -15,18 +31,18 @@ function OnChat(Player, Message)
 
 			for key, value in pairs(players) do
 				player = cRoot:Get():DoWithPlayerByUUID(value[1],
-					function (Player)
-						Player:SendMessage("@b[Town] @f" .. senderName .. ": " .. Message);
-					end
+				function (Player)
+					Player:SendMessage("@b[Town] @f" .. senderName .. ": " .. Message);
+				end
 				);
 			end
 		elseif(Channel[UUID] == "local") then
 			local world = Player:GetWorld():ForEachPlayer(
-				function (a_OtherPlayer)
-					if((math.abs(Player:GetPosX() - a_OtherPlayer:GetPosX()) <= config.range_localChat) and (math.abs(Player:GetPosZ() - a_OtherPlayer:GetPosZ()) <= config.range_localChat)) then
-						a_OtherPlayer:SendMessage("@f[Local] " .. senderName .. ": " .. Message);
-					end
+			function (a_OtherPlayer)
+				if((math.abs(Player:GetPosX() - a_OtherPlayer:GetPosX()) <= config.range_localChat) and (math.abs(Player:GetPosZ() - a_OtherPlayer:GetPosZ()) <= config.range_localChat)) then
+					a_OtherPlayer:SendMessage("@f[Local] " .. senderName .. ": " .. Message);
 				end
+			end
 			);
 		else
 			cRoot:Get():BroadcastChat("@a[Global] @f" .. Player:GetName() .. ": " .. Message);
@@ -50,6 +66,8 @@ function SwitchChat(Split, Player)
 			else
 				if(Split[2] == "global") then
 					switchGlobal(Player, UUID);
+				elseif(Split[2] == "nation") then
+					switchNation(Player, UUID);
 				elseif(Split[2] == "town") then
 					switchTown(Player, UUID);
 				elseif(Split[2] == "local") then
@@ -58,51 +76,70 @@ function SwitchChat(Split, Player)
 					Player:SendMessageFailure("That channel doesn't exist.");
 				end
 			end
-		elseif(Split[1] == "/lc") then
-			switchLocal(Player, UUID);
 		elseif(Split[1] == "/gc") then
 			switchGlobal(Player, UUID);
+		elseif(Split[1] == "/nc") then
+			switchNation(Player, UUID);
 		elseif(Split[1] == "/tc") then
 			switchTown(Player, UUID);
+		elseif(Split[1] == "/lc") then
+			switchLocal(Player, UUID);
 		end
 
 		return true;
 	else
 		return true;
-	end
-end
-
-function switchLocal(Player, UUID)
-	if not (Channel[UUID] == "local") then
-		Channel[UUID] = "local";
-		Player:SendMessageInfo("Switched to the local channel. Your messages now have a reach of " .. config.range_localChat .. " blocks.");
-	else
-		Player:SendMessageFailure("You are already in this channel.");
 	end
 end
 
 function switchGlobal(Player, UUID)
-	if not (Channel[UUID] == "global") then
+	if (Channel[UUID] == "global") then
+		Player:SendMessageFailure("You are already in this channel");
+	else
 		Channel[UUID] = "global";
 		Player:SendMessageInfo("Switched to the global channel");
+	end
+end
+
+function switchNation(Player, UUID)
+	if (Channel[UUID] == "nation") then
+		Player:SendMessageFailure("You are already in this channel");
 	else
-		Player:SendMessageFailure("You are already in this channel.");
+		local sql = "SELECT nations.nation_id FROM nations INNER JOIN towns ON nations.nation_id = towns.nation_id INNER JOIN residents ON towns.town_id = residents.town_id WHERE player_uuid = ?";
+		local parameter = {UUID};
+		local nation = ExecuteStatement(sql, parameter)[1];
+
+		if not (nation) then
+			Player:SendMessageFailure("You can not switch to nation chat if you're not part of a nation");
+		else
+			Channel[UUID] = "nation";
+			Player:SendMessageSuccess("Switched to the nation channel");
+		end
 	end
 end
 
 function switchTown(Player, UUID)
-	if not (Channel[UUID] == "town") then
+	if (Channel[UUID] == "town") then
+		Player:SendMessageFailure("You are already in this channel");
+	else
 		sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
 		parameter = {UUID};
 		local town_id = ExecuteStatement(sql, parameter)[1][1];
 
-		if(town_id) then
+		if not (town_id) then
+			Player:SendMessageFailure("You can not switch to town chat if you're not part of a town");
+		else
 			Channel[UUID] = "town";
 			Player:SendMessageInfo("Switched to the town channel");
-		else
-			Player:SendMessageFailure("You can not switch to town chat if you're not part of a town.");
 		end
+	end
+end
+
+function switchLocal(Player, UUID)
+	if (Channel[UUID] == "local") then
+		Player:SendMessageFailure("You are already in this channel");
 	else
-		Player:SendMessageInfo("You are already in this channel.");
+		Channel[UUID] = "local";
+		Player:SendMessageInfo("Switched to the local channel. Your messages now have a reach of " .. config.range_localChat .. " blocks");
 	end
 end
