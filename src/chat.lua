@@ -23,8 +23,6 @@ function OnChat(Player, Message)
 		elseif(Channel[UUID] == "local") then
 			local world = Player:GetWorld():ForEachPlayer(
 				function (a_OtherPlayer)
-					LOG(Player:GetPosX() - a_OtherPlayer:GetPosX());
-					LOG(Player:GetPosZ() - a_OtherPlayer:GetPosZ());
 					if((math.abs(Player:GetPosX() - a_OtherPlayer:GetPosX()) <= config.range_localChat) and (math.abs(Player:GetPosZ() - a_OtherPlayer:GetPosZ()) <= config.range_localChat)) then
 						a_OtherPlayer:SendMessage("@f[Local] " .. senderName .. ": " .. Message);
 					end
@@ -75,7 +73,7 @@ function SwitchChat(Split, Player)
 end
 
 function switchLocal(Player, UUID)
-	if(Channel[UUID] == "local") then
+	if not (Channel[UUID] == "local") then
 		Channel[UUID] = "local";
 		Player:SendMessageInfo("Switched to the local channel. Your messages now have a reach of " .. config.range_localChat .. " blocks.");
 	else
@@ -84,7 +82,7 @@ function switchLocal(Player, UUID)
 end
 
 function switchGlobal(Player, UUID)
-	if(Channel[UUID] == "global") then
+	if not (Channel[UUID] == "global") then
 		Channel[UUID] = "global";
 		Player:SendMessageInfo("Switched to the global channel");
 	else
@@ -93,7 +91,7 @@ function switchGlobal(Player, UUID)
 end
 
 function switchTown(Player, UUID)
-	if(Channel[UUID] == "town") then
+	if not (Channel[UUID] == "town") then
 		sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
 		parameter = {UUID};
 		local town_id = ExecuteStatement(sql, parameter)[1][1];
@@ -105,7 +103,6 @@ function switchTown(Player, UUID)
 			Player:SendMessageFailure("You can not switch to town chat if you're not part of a town.");
 		end
 	else
-		Channel[UUID] = "town";
 		Player:SendMessageInfo("You are already in this channel.");
 	end
 end
