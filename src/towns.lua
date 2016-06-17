@@ -260,6 +260,10 @@ function TownLeave(Split, Player)
 
 			Leaving[UUID] = nil;
 
+			if(Channel[UUID] == "town" or Channel[UUID] == "nation") then
+				Channel[UUID] = "global";
+			end
+
 			return true;
 		else
 			sql = "SELECT player_name FROM residents WHERE town_id = ?";
