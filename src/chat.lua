@@ -5,12 +5,8 @@ function OnChat(Player, Message)
 
 		--If the player is in the specified channel, send it to the players having that channel active
 		if(Channel[UUID] == "nation") then --Nation channel
-			local sql = "SELECT nations.nation_id FROM nations INNER JOIN towns ON nations.nation_id = towns.nation_id INNER JOIN residents ON towns.town_id = residents.town_id WHERE player_uuid = ?";
+			local sql = "SELECT residents.player_uuid FROM residents INNER JOIN towns ON residents.town_id = towns.town_id WHERE towns.nation_id = (SELECT nations.nation_id FROM nations INNER JOIN towns ON nations.nation_id = towns.nation_id INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?)";
 			local parameter = {UUID};
-			local nation = ExecuteStatement(sql, parameter)[1];
-
-			local sql = "SELECT player_uuid FROM residents INNER JOIN towns ON residents.town_id = towns.town_id WHERE towns.nation_id = ?";
-			local parameter = {nation[1]};
 			local players = ExecuteStatement(sql, parameter);
 
 			for key, value in pairs(players) do
@@ -21,13 +17,9 @@ function OnChat(Player, Message)
 				);
 			end
 		elseif(Channel[UUID] == "town") then --Town channel
-			sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
-			parameter = {UUID};
-			local town_id = ExecuteStatement(sql, parameter)[1][1];
-
-			sql = "SELECT player_uuid FROM residents WHERE town_id = ?";
-			parameters = {town_id};
-			local players = ExecuteStatement(sql, parameters);
+			local sql = "SELECT player_uuid FROM residents WHERE town_id = (SELECT town_id FROM residents WHERE player_uuid = ?)";
+			local parameter = {UUID};
+			local players = ExecuteStatement(sql, parameter);
 
 			for key, value in pairs(players) do
 				player = cRoot:Get():DoWithPlayerByUUID(value[1],
