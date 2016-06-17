@@ -20,7 +20,7 @@ function CheckBlockPermission(Player, BlockX, BlockZ)
     local town_id = ExecuteStatement(sql, parameters);
     if (town_id[1] and town_id[1][1]) then --The block being broken is part of a town
         local sql = "SELECT * FROM residents WHERE player_uuid = ? AND town_id = ?";
-        local parameters = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true), town_id[1][1]};
+        local parameters = {Player:GetUUID(), town_id[1][1]};
         local result = ExecuteStatement(sql, parameters);
         if (result[1] and result[1][1]) then -- Player is in a town he belongs to
             return false;
@@ -77,7 +77,7 @@ function GetTimestampFromString(timestring) --Returns the Lua timestamp from a s
 end
 
 function OnPlayerJoined(Player)
-	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+	local UUID = Player:GetUUID();
     local sql = "INSERT OR IGNORE INTO residents (player_uuid, player_name, town_id, town_rank, last_online) VALUES (?, ?, NULL, NULL, datetime(\"now\"))";
     local parameters = {UUID, Player:GetName()};
     if(ExecuteStatement(sql, parameters) == nil) then

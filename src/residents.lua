@@ -5,14 +5,6 @@ function DisplayResident(Split, Player)
 	  return true
    end
 
-   -- Retrieve the player UUID of the resident from Mojang
-   --   local UUID = cMojangAPI:GetUUIDFromPlayerName(Split[2], true)
-   --
-   -- if (UUID == "") then
-   --  Player:SendMessageFailure("Invalid player!")
-   --return true
-   -- end
-
    -- Query the resident info from the database
    local sql = "SELECT residents.player_name, towns.town_name, residents.town_rank, residents.last_online FROM residents LEFT JOIN towns ON towns.town_id = residents.town_id WHERE residents.player_name = ?"
    local parameters = {Split[2]}

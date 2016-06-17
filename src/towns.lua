@@ -5,7 +5,7 @@ function TownCreate(Split, Player)
         return true;
     end
 
-    local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+    local UUID = Player:GetUUID();
 
     -- Retrieve the player UUID from Mojang of the player that invoked the command
     local result = GetPlayerTown(UUID);
@@ -51,7 +51,7 @@ end
 function TownClaim(Split, Player)
 	if(InTown[Player:GetName()] == nil) then
 		-- Get the town of the player
-		local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
+		local town_id = GetPlayerTown(Player:GetUUID());
 
 		if not (town_id == nil) then
 			sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
@@ -89,7 +89,7 @@ function TownUnclaim(Split, Player)
 	if (InTown[Player:GetName()] == nil) then
 		Player:SendMessageFailure("You can't unclaim land if you're not inside a town!");
 	else
-		local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+		local UUID = Player:GetUUID();
 		local town_id = GetPlayerTown(UUID);
 
 		local sql = "SELECT town_owner FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
@@ -121,16 +121,17 @@ function TownUnclaim(Split, Player)
 end
 
 function TownAddPlayer(Split, Player)
+	local UUID = Player:GetUUID();
     if(Split[3] == nil) then
         Player:SendMessageFailure("You need to specify a player.");
         return true;
     end
 
-    local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
+    local town_id = GetPlayerTown(UUID);
 
     if not (town_id == nil) then
-        local invitedPlayer = cMojangAPI:GetUUIDFromPlayerName(Split[3], true);
-        if (invitedPlayer == "") then
+        local UUID_invitedPlayer = cMojangAPI:GetUUIDFromPlayerName(Split[3], true);
+        if (UUID_invitedPlayer == "") then
             Player:SendMessageFailure("This player does not exist.");
             return true;
         end
@@ -139,7 +140,7 @@ function TownAddPlayer(Split, Player)
 
         if(remote_town_id == nil) then
             sql = "INSERT INTO invitations (player_uuid, town_id) VALUES (?, ?)";
-            parameters = {cMojangAPI:GetUUIDFromPlayerName(Split[3], true), town_id};
+            parameters = {UUID_invitedPlayer, town_id};
             ExecuteStatement(sql, parameters);
             Player:SendMessageSuccess("The specified player is succesfully invited to the town");
         else
@@ -154,7 +155,7 @@ end
 
 function TownJoin(Split, Player)
     local town_id;
-	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+	local UUID = Player:GetUUID();
 
 	sql = "SELECT town_id FROM invitations WHERE player_uuid = ?";
 	parameters = {UUID};
@@ -211,9 +212,9 @@ end
 
 Leaving = {};
 function TownLeave(Split, Player)
-	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+	local UUID = Player:GetUUID();
     sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
-    parameter = {cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true)};
+    parameter = {UUID};
     local town_id = ExecuteStatement(sql, parameter)[1][1];
 
     if(town_id) then
@@ -289,7 +290,7 @@ end
 
 function TownToggleExplosions(Split, Player)
 	if not (InTown[Player:GetName()] == nil) then
-		local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
+		local town_id = GetPlayerTown(Player:GetUUID());
 
 		local sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?";
 		local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
@@ -334,7 +335,7 @@ function TownList(Split, Player)
 end
 
 function TownRank(Split, Player)
-	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+	local UUID = Player:GetUUID();
 
 	sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
 	parameter = {UUID};
@@ -406,7 +407,7 @@ end
 
 function TownTogglePVP(Split, Player)
     if not (InTown[Player:GetName()] == nil) then
-		local town_id = GetPlayerTown(cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true));
+		local town_id = GetPlayerTown(Player:GetUUID());
 
 		local sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?";
 		local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
@@ -438,7 +439,7 @@ function TownTogglePVP(Split, Player)
 end
 
 function TownToggleMobs(Split, Player)
-	local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+	local UUID = Player:GetUUID();
 
 	local sql = "SELECT towns.town_id, towns.town_owner, towns.town_mobs_enabled FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
 	local parameter = {UUID};

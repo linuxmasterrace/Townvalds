@@ -1,6 +1,6 @@
 function OnChat(Player, Message)
 	if(config.handle_chat == true) then --Only handle chat if set so in the config
-		local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+		local UUID = Player:GetUUID();
 		local senderName = Player:GetName();
 
 		--If the player is in the specified channel, send it to the players having that channel active
@@ -49,7 +49,7 @@ end
 Channel = {};
 function SwitchChat(Split, Player)
 	if(config.handle_chat == true) then --Only handle chat if set so in the config
-		local UUID = cMojangAPI:GetUUIDFromPlayerName(Player:GetName(), true);
+		local UUID = Player:GetUUID();
 
 		if(Split[1] == "/switchchat" or Split[1] == "/sc") then
 			if not(Split[2]) then
