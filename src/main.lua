@@ -38,6 +38,14 @@ function Initialize(Plugin)
 		db = sqlite3.open(PLUGIN:GetLocalFolder() .. cFile:GetPathSeparator() .. config.dbname);
 	end
 
+	--Compare players already online before loading the plugin with the database and sync the two
+	LOG("[" .. PLUGIN:GetName() .. "] Syncing online players with the database");
+	cRoot:Get():ForEachPlayer(
+	function (Player)
+		OnPlayerJoined(Player);
+	end
+	);
+
 	--Compare existing nations to nations existing in the database and sync the two
 	LOG("[" .. PLUGIN:GetName() .. "] Syncing nations with the database");
 	NationSync();
