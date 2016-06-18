@@ -153,6 +153,38 @@ function TownAddPlayer(Split, Player)
     return true;
 end
 
+function TownKickPlayer(Split, Player)
+	if(Split[3] == nil) then
+        Player:SendMessageFailure("You need to specify a player.");
+        return true;
+    end
+
+	local UUID = Player:GetUUID();
+	local UUID_target = cMojangAPI:GetUUIDFromPlayerName(Split[3]);
+	local town_id = GetPlayerTown(UUID);
+
+	if(not town_id) then
+		Player:SendMessageFailure("You have to be in a town to kick players");
+	elseif not (town_id == GetPlayerTown(UUID_target)) then
+		Player:SendMessageFailure("This player is not in your town");
+	else
+		local sql = "SELECT town_owner FROM towns WHERE town_id = ?";
+		local parameter = {town_id};
+
+		if not (ExecuteStatement(sql, parameter)[1][1] == UUID) then
+			Player:SendMessageFailure("You have to be the town mayor to kick residents")
+		else
+			local sql = "UPDATE residents SET town_id = NULL WHERE player_uuid = ?";
+			local parameter = {UUID_target};
+			ExecuteStatement(sql, parameter);
+
+			Player:SendMessageSuccess(Split[3] .. " is kicked from your town");
+		end
+	end
+
+	return true;
+end
+
 function TownJoin(Split, Player)
     local town_id;
 	local UUID = Player:GetUUID();

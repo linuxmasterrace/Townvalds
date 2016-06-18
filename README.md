@@ -48,6 +48,7 @@ Most of these features are configurable in the settings file inside the plugin f
 | | claim | | | townvalds.town.claim | Claims a chunk for the current town |
 | | unclaim | | | townvalds.town.unclaim | Unclaims a chunk for the current town |
 | | add | [username] | | townvalds.town.add | Invites a player to the town |
+| | kick | [username] | | townvalds.town.kick | Kicks a resident of the town |
 | | join | {townname} | | townvalds.town.join | If the player has an invitation of a town, joins the town |
 | | leave | | | townvalds.town.leave | Leaves the current town |
 | | toggle | explosions | | townvalds.town.toggle | Toggles explosions on or off in the current town |
