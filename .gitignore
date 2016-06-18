@@ -1,2 +1,4 @@
 src/database.sqlite3
 src/config.ini
+database.sqlite3
+config.ini
