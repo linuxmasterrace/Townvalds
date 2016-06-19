@@ -4,13 +4,13 @@ function CheckPlayerInTown(Player, chunkX, chunkZ)
     local sql = "SELECT towns.town_name, townChunks.chunkX, townChunks.chunkZ, townChunks.world FROM townChunks LEFT JOIN towns ON towns.town_id = townChunks.town_id WHERE townChunks.chunkX = ? AND townChunks.chunkZ = ? AND townChunks.world = ?";
     local parameters = {chunkX, chunkZ, Player:GetWorld():GetName()};
     local result = ExecuteStatement(sql, parameters);
-    local town = InTown[Player:GetName()];
+    local town = InTown[Player:GetUUID()];
     if(result[1] and result[1][1] and result[1][1] ~= town) then
         Player:SendMessage("You're in the town " .. result[1][1]);
-        InTown[Player:GetName()] = result[1][1];
+        InTown[Player:GetUUID()] = result[1][1];
     elseif (not(result[1] and result[1][1]) and town) then
         Player:SendMessage("You have left the town "..town..".");
-        InTown[Player:GetName()] = nil;
+        InTown[Player:GetUUID()] = nil;
     end
 end
 
@@ -44,25 +44,25 @@ function GetPlayerTown(UUID)
     end
 end
 
-function GetTownName(town_id)
+function GetTownName(townId)
     sql = "SELECT town_name FROM towns WHERE town_id = ?";
-    parameters = {town_id};
-    local result = ExecuteStatement(sql, parameters);
+    parameters = {townId};
+    local townName = ExecuteStatement(sql, parameters)[1];
 
-    if(result[1] and result[1][1]) then
-        return result[1][1];
+    if (townName) then
+        return townName[1];
     else
         return nil;
     end
 end
 
-function GetTownId(town_name)
+function GetTownId(townName)
     sql = "SELECT town_id FROM towns WHERE town_name = ?";
-    parameters = {town_name};
-    local result = ExecuteStatement(sql, parameters);
+    parameters = {townName};
+    local townId = ExecuteStatement(sql, parameters)[1];
 
-    if(result[1] and result[1][1]) then
-        return result[1][1];
+    if(townId) then
+        return townId[1];
     else
         return nil;
     end
@@ -94,7 +94,7 @@ function OnPlayerSpawned(Player) -- This is called after both connection and res
 end
 
 function OnPlayerDestroyed(Player) -- This is called when a player that has been in the game disconnects
-    InTown[Player:GetName()] = nil; -- We set it to nil so Lua can garbage collect it and so the player gets the message on connection
+    InTown[Player:GetUUID()] = nil; -- We set it to nil so Lua can garbage collect it and so the player gets the message on connection
 end
 
 function DisplayVersion(Split, Player)
