@@ -153,6 +153,57 @@ function TownAddPlayer(Split, Player)
     return true;
 end
 
+function TownKickPlayer(Split, Player)
+	if (Split[3] == nil) then
+        Player:SendMessageFailure("You need to specify a player.");
+        return true;
+    end
+
+	local UUID = Player:GetUUID();
+	local townId = GetPlayerTown(UUID);
+	local UUID_target = cMojangAPI:GetUUIDFromPlayerName(Split[3]);
+
+	if (UUID_target == "") then
+		Player:SendMessageFailure("This player does not exist.");
+		return true;
+	elseif (UUID_target == UUID) then
+		Player:SendMessageFailure("You can't kick yourself");
+		return true;
+	end
+
+	if not (townId) then
+		Player:SendMessageFailure("You have to be in a town to kick players");
+	elseif not (townId == GetPlayerTown(UUID_target)) then
+		Player:SendMessageFailure(Split[3] .. " is not a resident of your town");
+	else
+		local sql = "SELECT town_name, town_owner FROM towns WHERE town_id = ?";
+		local parameter = {townId};
+		local town = ExecuteStatement(sql, parameter)[1];
+
+		if not (town[2] == UUID) then
+			Player:SendMessageFailure("You have to be the town mayor to kick residents")
+		else
+			local sql = "UPDATE residents SET town_id = NULL WHERE player_uuid = ?";
+			local parameter = {UUID_target};
+			ExecuteStatement(sql, parameter);
+
+			Player:SendMessageSuccess(Split[3] .. " has been kicked from your town");
+
+			cRoot:Get():DoWithPlayerByUUID(UUID_target,
+			function (Player_target)
+				Player_target:SendMessageInfo("You have been kicked from " .. town[1] .. " by " .. Player:GetName());
+			end
+			);
+
+			if(Channel[UUID_target] == "town" or Channel[UUID_target] == "nation") then
+				Channel[UUID_target] = "global";
+			end
+		end
+	end
+
+	return true;
+end
+
 function TownJoin(Split, Player)
     local town_id;
 	local UUID = Player:GetUUID();

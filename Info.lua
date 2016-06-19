@@ -96,6 +96,12 @@ g_PluginInfo =
 					HelpString = "Invites a player to a town",
 					Permission = "townvalds.town.add",
 				},
+				kick =
+				{
+					Handler = TownKickPlayer,
+					HelpString = "Kicks a resident of the town",
+					Permission = "townvalds.town.kick",
+				},
 				join =
 				{
 					Handler = TownJoin,
@@ -270,6 +276,16 @@ g_PluginInfo =
 		["townvalds.town.unclaim"] =
 		{
 			Description = "Allows the player to unclaim a chunk for the town",
+			RecommendedGroups = "default",
+		},
+		["townvalds.town.add"] =
+		{
+			Description = "Allows the player to invite people to the town",
+			RecommendedGroups = "default",
+		},
+		["townvalds.town.kick"] =
+		{
+			Description = "Allows the player to kick residents from the town",
 			RecommendedGroups = "default",
 		},
 		["townvalds.town.rank"] =
