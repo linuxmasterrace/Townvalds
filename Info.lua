@@ -78,6 +78,13 @@ g_PluginInfo =
 					HelpString = "Creates a new town on the current location",
 					Permission = "townvalds.town.new",
 				},
+				delete =
+				{
+					Alias = {"remove"},
+					Handler = TownDelete,
+					HelpString = "Deletes a town",
+					Permission = "townvalds.town.delete"
+				},
 				claim =
 				{
 					Handler = TownClaim,
@@ -267,6 +274,16 @@ g_PluginInfo =
 		{
 			Description = "Allows the player to create a new town",
 			RecommendedGroups = "default",
+		},
+		["townvalds.town.delete"] =
+		{
+			Description = "Allows the player to delete their own town",
+			RecommendedGroups = "default",
+		},
+		["townvalds.town.delete.other"] =
+		{
+			Description = "Allows the player to delete any town",
+			RecommendedGroups = "admins",
 		},
 		["townvalds.town.claim"] =
 		{

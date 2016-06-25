@@ -44,6 +44,59 @@ function TownCreate(Split, Player)
 	return true;
 end
 
+function TownDelete(Split, Player)
+	local UUID = Player:GetUUID();
+	local townId = GetPlayerTown(UUID);
+
+	if (Split[3]) then
+		local sql = "SELECT town_id, town_name, town_owner FROM towns WHERE town_name = ?";
+		local parameter = {Split[3]};
+		local town = ExecuteStatement(sql, parameter)[1];
+
+		if not (town) then
+			Player:SendMessageFailure("That town does not exist");
+		else
+			if (town[1] == townId) then
+				if not (town[3] == UUID) then
+					if not (Player:HasPermission("townvalds.town.delete.other")) then
+						Player:SendMessageFailure("You have to be the owner of your town to delete it");
+					else
+						DeleteTown(town[1]);
+						Player:SendMessageSuccess(town[2] .. " is succesfully deleted");
+					end
+				else
+					DeleteTown(town[1]);
+					Player:SendMessageSuccess(town[2] .. " is succesfully deleted");
+				end
+			else
+				if not (Player:HasPermission("townvalds.town.delete.other")) then
+					Player:SendMessageFailure("You are not allowed to delete someone else's town");
+				else
+					DeleteTown(town[1]);
+					Player:SendMessageSuccess(town[2] .. " is succesfully deleted");
+				end
+			end
+		end
+	else
+		if not (townId) then
+			Player:SendMessageFailure("You have to be the owner of a town to delete it");
+		else
+			local sql = "SELECT town_name, town_owner FROM towns WHERE town_id = ?";
+			local parameter = {townId};
+			local town = ExecuteStatement(sql, parameter)[1];
+
+			if not (town[2] == UUID) then
+				Player:SendMessageFailure("You have to be the owner of your town to delete it");
+			else
+				DeleteTown(townId);
+				Player:SendMessageSuccess(town[1] .. " is succesfully deleted");
+			end
+		end
+	end
+
+	return true;
+end
+
 function TownClaim(Split, Player)
 	local UUID = Player:GetUUID();
 

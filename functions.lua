@@ -68,6 +68,22 @@ function GetTownId(townName)
     end
 end
 
+function DeleteTown(townId)
+	local sql = "DELETE FROM towns WHERE town_id = ?";
+	local parameter = {townId};
+	ExecuteStatement(sql, parameter);
+
+	local sql = "DELETE FROM townChunks WHERE town_id = ?";
+	local parameter = {townId};
+	ExecuteStatement(sql, parameter);
+
+	local sql = "UPDATE residents SET town_id = NULL WHERE town_id = ?";
+	local parameter = {townId};
+	ExecuteStatement(sql, parameter);
+
+	return true;
+end
+
 function GetTimestampFromString(timestring) --Returns the Lua timestamp from a string which is formatted as "YYYY-mm-dd HH:MM:SS"
 	local pattern = "(%d+)-(%d+)-(%d+) (%d+):(%d+):(%d+)";
 	local year, month, day, hour, minute, second = timestring:match(pattern);
