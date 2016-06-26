@@ -69,7 +69,7 @@ function GetTownId(townName)
 end
 
 function DeleteTown(townId)
-	--Since we make use of foreign keys, townChunks will be deleted accordingly and town_id  will be set to null in residents automatically
+	--Since we make use of foreign keys, townChunks will be deleted accordingly and town_id will be set to null in residents automatically
 	local sql = "DELETE FROM towns WHERE town_id = ?";
 	local parameter = {townId};
 	ExecuteStatement(sql, parameter);
