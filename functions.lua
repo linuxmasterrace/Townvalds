@@ -78,12 +78,15 @@ end
 
 function OnPlayerJoined(Player) -- This is called after connection
 	local UUID = Player:GetUUID();
-    local sql = "INSERT OR IGNORE INTO residents (player_uuid, player_name, town_id, town_rank, first_joined) VALUES (?, ?, NULL, NULL, datetime(\"now\")); UPDATE residents SET last_online = NULL WHERE player_uuid = ?;";
-    local parameters = {UUID, Player:GetName(), UUID};
+    local sql = "INSERT OR IGNORE INTO residents (player_uuid, player_name, town_id, town_rank, first_joined) VALUES (?, ?, NULL, NULL, datetime(\"now\"))";
+    local parameters = {UUID, Player:GetName()};
     if(ExecuteStatement(sql, parameters) == nil) then
         LOG("Couldn't add player "..Player:GetName().." to the database!!!");
     end
 
+	local sql = "UPDATE residents SET last_online = NULL WHERE player_uuid = ?";
+	local parameters = {UUID};
+	ExecuteStatement(sql, parameters);
 	Channel[UUID] = "global";
 
 	return true;
