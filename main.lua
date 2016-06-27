@@ -31,12 +31,11 @@ function Initialize(Plugin)
 	--Create a new database if this is the first load, otherwise open the existing one
 	if not (cFile:IsFile(PLUGIN:GetLocalFolder() .. cFile:GetPathSeparator() .. config.dbname)) then -- If true, means database is deleted, or the plugin runs for the first time
 		LOG("[" .. PLUGIN:GetName() .. "] It looks like this is the first time running this plugin. Creating database...")
-		db = sqlite3.open(PLUGIN:GetLocalFolder() .. cFile:GetPathSeparator() .. config.dbname);
-		CreateDatabase()
 	else
 		LOG("[" .. PLUGIN:GetName() .. "] Opening database");
-		db = sqlite3.open(PLUGIN:GetLocalFolder() .. cFile:GetPathSeparator() .. config.dbname);
 	end
+	db = sqlite3.open(PLUGIN:GetLocalFolder() .. cFile:GetPathSeparator() .. config.dbname);
+	ConfigureDatabase();
 
 	--Compare players already online before loading the plugin with the database and sync the two
 	LOG("[" .. PLUGIN:GetName() .. "] Syncing online players with the database");
