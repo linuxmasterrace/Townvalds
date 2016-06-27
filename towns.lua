@@ -91,16 +91,16 @@ function TownDelete(Split, Player)
 		else
 			if not (Player:HasPermission("townvalds.town.delete.other")) then
 				Player:SendMessageFailure("You are not allowed to delete someone else's town");
-				else
-					Deleting[UUID] = town[1];
-					Player:SendMessageInfo("Are you sure you want to delete " .. town[2] .. "?");
-					Player:SendMessageInfo("Use `/town delete` again if you wish to continue.");
-				end
+			else
+				Deleting[UUID] = town[1];
+				Player:SendMessageInfo("Are you sure you want to delete " .. town[2] .. "?");
+				Player:SendMessageInfo("Use `/town delete` again if you wish to continue.");
 			end
 		end
-
-		return true;
 	end
+
+	return true;
+end
 
 	function TownClaim(Split, Player)
 		local UUID = Player:GetUUID();
