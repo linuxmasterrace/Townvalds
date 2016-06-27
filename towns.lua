@@ -369,17 +369,7 @@ function TownLeave(Split, Player)
 			local playersLeft = ExecuteStatement(sql, parameter);
 
 			if not (playersLeft[1]) then --Make sure we don't remove the town if somebody just joined
-				local sql = "DELETE FROM townChunks WHERE town_id = ?";
-				local parameter = {townId};
-				ExecuteStatement(sql, parameter);
-
-				local sql = "DELETE FROM towns WHERE town_id = ?";
-				local parameter = {townId};
-				ExecuteStatement(sql, parameter);
-
-				local sql = "DELETE FROM invitations WHERE town_id = ?";
-				local parameter = {townId};
-				ExecuteStatement(sql, parameter);
+				DeleteTown(townId);
 
 				Player:GetWorld():BroadcastChatInfo("The town " .. townName .. " fell in ruins!");
 			else
