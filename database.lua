@@ -1,4 +1,4 @@
-function CreateDatabase()
+function ConfigureDatabase()
 	-- Create tables
 	local sqlCreate = {
 		"PRAGMA foreign_keys = ON",
