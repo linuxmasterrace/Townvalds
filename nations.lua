@@ -110,10 +110,6 @@ function NationLeave(Split, Player)
 			local nationName = ExecuteStatement(sql, parameter)[1][1];
 
 			if(townInNationCount == 1) then
-				local sql = "UPDATE towns SET nation_id = NULL WHERE town_owner = ?";
-				local parameter = {UUID};
-				ExecuteStatement(sql, parameter);
-
 				local sql = "DELETE FROM nations WHERE nation_id = ?";
 				local parameter = {town[3]};
 				ExecuteStatement(sql, parameter);
