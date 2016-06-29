@@ -197,3 +197,55 @@ function NationToggleFriendlyFire(Split, Player)
 
 	return true;
 end
+
+function NationSetCapital(Split, Player)
+	if not (Split[4]) then
+		Player:SendMessageFailure("You have to specify the new capital");
+		return true;
+	end
+
+	local UUID = Player:GetUUID();
+
+	local sql = "SELECT town_id, town_owner, nation_id FROM towns WHERE town_id = ?";
+	local parameter = {GetPlayerTown(UUID)};
+	local town = ExecuteStatement(sql, parameter)[1];
+
+	if not (town) then
+		Player:SendMessageFailure("You're not part of a town");
+	elseif not (town[2] == UUID) then --If the player is not the mayor of his town, then there is no way he is the king
+		Player:SendMessageFailure("You're not the king of this nation");
+	else
+		local sql = "SELECT nation_id, nation_name, nation_capital FROM nations WHERE nation_id = ?";
+		local parameter = {town[3]};
+		local nation = ExecuteStatement(sql, parameter)[1];
+
+		if not (nation) then
+			Player:SendMessageFailure("You're town is not part of a nation");
+		elseif not (nation[3] == town[1]) then --If the player's town is not the capital of the nation, then there is no way he is the king
+			Player:SendMessageFailure("You're not the king of this nation");
+		else
+			local townId_remote = GetTownId(Split[4]);
+			if not (townId_remote) then
+				Player:SendMessageFailure("That town doesn't exist");
+			else
+				local sql = "SELECT town_id, town_name, nation_id FROM towns WHERE town_id = ?";
+				local parameter = {townId_remote};
+				local town_remote = ExecuteStatement(sql, parameter)[1];
+
+				if not (town_remote) then
+					Player:SendMessageFailure("That town is not part of a nation");
+				elseif not (town_remote[3] == nation[1]) then
+					Player:SendMessageFailure("That town is part of a different nation");
+				else
+					local sql = "UPDATE nations SET nation_capital = ? WHERE nation_id = ?";
+					local parameters = {town_remote[1], nation[1]};
+					ExecuteStatement(sql, parameters);
+
+					Player:SendMessageSuccess(town_remote[2] .. " is now the new capital of " .. nation[2]);
+				end
+			end
+		end
+	end
+
+	return true;
+end

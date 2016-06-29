@@ -65,7 +65,19 @@ g_PluginInfo =
 							Permission = "townvalds.nation.toggle",
 						},
 					}
-				}
+				},
+				["set"] =
+				{
+					Subcommands =
+					{
+						capital =
+						{
+							Handler = NationSetCapital,
+							HelpString = "Changes the nation's capital",
+							Permission = "townvalds.nation.set.capital",
+						}
+					}
+				},
 			}
 		},
 		["/town"] =
@@ -267,7 +279,12 @@ g_PluginInfo =
 		},
 		["townvalds.nation.toggle"] =
 		{
-			Description = "Allows the player to toggle nation features",
+			Description = "Allows the player to toggle nation protections",
+			RecommendedGroups = "default",
+		},
+		["townvalds.nation.set.capital"] =
+		{
+			Description = "Allows the player to set a different capital for nations",
 			RecommendedGroups = "default",
 		},
 		["townvalds.town.new"] =
@@ -312,7 +329,7 @@ g_PluginInfo =
 		},
 		["townvalds.town.toggle"] =
 		{
-			Description = "Allows the player to toggle town features",
+			Description = "Allows the player to toggle town protections",
 			RecommendedGroups = "default",
 		},
 		["townvalds.plot.claim"] =
