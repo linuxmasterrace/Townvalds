@@ -94,7 +94,11 @@ function NationLeave(Split, Player)
 		local parameter = {town[3]};
 		local nation = ExecuteStatement(sql, parameter)[1];
 
-		if (nation[3] == town[1]) then
+		local sql = "SELECT COUNT(*) FROM towns WHERE nation_id = ?";
+		local parameter = {town[3]};
+		local townInNationCount = ExecuteStatement(sql, parameter)[1][1];
+
+		if (nation[3] == town[1]) and (townInNationCount > 1) then
 			LeavingNation[UUID] = nil; --Make sure to clear the leaving que, otherwise the town could leave if it's set as capital between the 2 commands
 			Player:SendMessageFailure("Since your town is the capital, you can't leave the nation");
 			Player:SendMessageFailure("First set a new capital using '/town set capital [townname]'");
@@ -110,10 +114,6 @@ function NationLeave(Split, Player)
 					end
 				end
 
-				local sql = "SELECT COUNT(*) FROM towns WHERE nation_id = ?";
-				local parameter = {town[3]};
-				local townInNationCount = ExecuteStatement(sql, parameter)[1][1];
-
 				if(townInNationCount == 1) then
 					local sql = "DELETE FROM nations WHERE nation_id = ?";
 					local parameter = {town[3]};
@@ -126,7 +126,7 @@ function NationLeave(Split, Player)
 					end
 					);
 
-					Player:GetWorld():BroadcastChatInfo("The nation " .. nationName .. " was abandoned!");
+					Player:GetWorld():BroadcastChatInfo("The nation " .. nation[2] .. " was abandoned!");
 				else
 					local sql = "UPDATE towns SET nation_id = NULL WHERE town_id = ?";
 					local parameter = {town[1]};
