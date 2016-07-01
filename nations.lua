@@ -101,7 +101,7 @@ function NationLeave(Split, Player)
 		if (nation[3] == town[1]) and (townInNationCount > 1) then
 			LeavingNation[UUID] = nil; --Make sure to clear the leaving queue, otherwise the town could leave if it's set as capital between the 2 commands
 			Player:SendMessageFailure("Since your town is the capital, you can't leave the nation");
-			Player:SendMessageFailure("First set a new capital using '/town set capital [townname]'");
+			Player:SendMessageFailure("First set a new capital using '/nation set capital [townname]'");
 		else
 			if (LeavingNation[UUID]) then --The mayor wants to leave the nation
 				local sql = "SELECT player_uuid FROM residents WHERE town_id = ?";
