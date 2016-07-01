@@ -44,6 +44,7 @@ Most of these features are configurable in the settings file inside the plugin f
 | | leave | | | townvalds.nation.leave | Removes the town from the nation |
 | | list | | | townvalds.nation.list | Prints a list of all nations |
 | | toggle | friendlyfire | | townvalds.nation.toggle | Toggles friendly fire on or off in the current nation |
+| | set | capital | [townname]| | townvalds.nation.set.toggle | Sets the new capital of the current nation |
 | /town | new | [name] | | townvalds.town.new | Creates a new town on the current location |
 | | delete | {townname} | | townvalds.town.delete, townvalds.town.delete.other | Deletes a town |
 | | claim | | | townvalds.town.claim | Claims a chunk for the current town |
