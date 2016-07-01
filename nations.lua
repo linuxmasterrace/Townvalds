@@ -90,56 +90,63 @@ function NationLeave(Split, Player)
 	elseif (town[3] == nil) then
 		Player:SendMessageFailure("Your town is not part of a nation!");
 	else
+		local sql = "SELECT nation_id, nation_name, nation_capital FROM nations WHERE nation_id = ?";
+		local parameter = {town[3]};
+		local nation = ExecuteStatement(sql, parameter)[1];
+
 		local sql = "SELECT COUNT(*) FROM towns WHERE nation_id = ?";
 		local parameter = {town[3]};
 		local townInNationCount = ExecuteStatement(sql, parameter)[1][1];
 
-		if not (LeavingNation[UUID] == nil) then --The mayor wants to leave the nation
-			local sql = "SELECT player_uuid FROM residents WHERE town_id = ?";
-			local parameter = {town[1]};
-			local players = ExecuteStatement(sql, parameter);
-
-			for key, value in pairs(players) do
-				if (Channel[value[1]] == "nation") then
-					Channel[value[1]] = "town";
-				end
-			end
-
-			local sql = "SELECT nation_name FROM nations WHERE nation_id = ?";
-			local parameter = {town[3]};
-			local nationName = ExecuteStatement(sql, parameter)[1][1];
-
-			if(townInNationCount == 1) then
-				local sql = "DELETE FROM nations WHERE nation_id = ?";
-				local parameter = {town[3]};
-				ExecuteStatement(sql, parameter);
-
-				--Delete the nation from each world's team list
-				cRoot:Get():ForEachWorld(
-				function(cWorld)
-					cWorld:GetScoreBoard():RemoveTeam(nationName);
-				end
-				);
-
-				Player:GetWorld():BroadcastChatInfo("The nation " .. nationName .. " was abandoned!");
-			else
-				local sql = "UPDATE towns SET nation_id = NULL WHERE town_id = ?";
-				local parameter = {town[1]};
-				ExecuteStatement(sql, parameter);
-
-				Player:SendMessageSuccess("Your town left the nation");
-			end
-			LeavingNation[UUID] = nil;
+		if (nation[3] == town[1]) and (townInNationCount > 1) then
+			LeavingNation[UUID] = nil; --Make sure to clear the leaving queue, otherwise the town could leave if it's set as capital between the 2 commands
+			Player:SendMessageFailure("Since your town is the capital, you can't leave the nation");
+			Player:SendMessageFailure("First set a new capital using '/town set capital [townname]'");
 		else
-			if(townInNationCount == 1) then
-				Player:SendMessageInfo("Since your town is the last member of this nation, leaving it will cause it to be removed.");
-				Player:SendMessageInfo("Use `/nation leave` again if you wish to continue.");
-			else
-				Player:SendMessageInfo("Are you sure you want your town to leave the nation?");
-				Player:SendMessageInfo("Use `/nation leave` again if you wish to continue.");
-			end
+			if (LeavingNation[UUID]) then --The mayor wants to leave the nation
+				local sql = "SELECT player_uuid FROM residents WHERE town_id = ?";
+				local parameter = {town[1]};
+				local players = ExecuteStatement(sql, parameter);
 
-			LeavingNation[UUID] = true;
+				for key, value in pairs(players) do
+					if (Channel[value[1]] == "nation") then
+						Channel[value[1]] = "town";
+					end
+				end
+
+				if(townInNationCount == 1) then
+					local sql = "DELETE FROM nations WHERE nation_id = ?";
+					local parameter = {town[3]};
+					ExecuteStatement(sql, parameter);
+
+					--Delete the nation from each world's team list
+					cRoot:Get():ForEachWorld(
+					function(cWorld)
+						cWorld:GetScoreBoard():RemoveTeam(nation[2]);
+					end
+					);
+
+					Player:GetWorld():BroadcastChatInfo("The nation " .. nation[2] .. " was abandoned!");
+				else
+					local sql = "UPDATE towns SET nation_id = NULL WHERE town_id = ?";
+					local parameter = {town[1]};
+					ExecuteStatement(sql, parameter);
+
+					Player:SendMessageSuccess("Your town left the nation");
+				end
+
+				LeavingNation[UUID] = nil;
+			else
+				if(townInNationCount == 1) then
+					Player:SendMessageInfo("Since your town is the last member of this nation, leaving it will cause it to be removed.");
+					Player:SendMessageInfo("Use `/nation leave` again if you wish to continue.");
+				else
+					Player:SendMessageInfo("Are you sure you want your town to leave the nation?");
+					Player:SendMessageInfo("Use `/nation leave` again if you wish to continue.");
+				end
+
+				LeavingNation[UUID] = true;
+			end
 		end
 	end
 
