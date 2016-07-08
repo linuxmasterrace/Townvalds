@@ -1,11 +1,11 @@
 #Townvalds
 
-An open-source town plugin for [Cuberite](https://www.cuberite.org) (a custom Minecraft compatible game server written in C++). We're aiming to create a fully FOSS town system compatible with Cuberite implementing towns, nations, and permissions and protections management to follow along with them.
+An open-source town plugin for [Cuberite](https://cuberite.org) (a custom Minecraft compatible game server written in C++). We're aiming to create a fully FOSS town system compatible with Cuberite implementing towns, nations, and permissions and protections management to follow along with them.
 
 You can contact us on IRC at #linuxmasterrace @ irc.snoonet.org
 Do note that this channel talks about a whole lot of unrelated stuff as well, and you may need to contact us directly.
 
-Townvalds requires [Cuberite](https://www.cuberite.org) and a legitimate [Minecraft](https://www.minecraft.net) account to run.
+Townvalds requires [Cuberite](https://cuberite.org) and a legitimate [Minecraft](https://www.minecraft.net) account to run.
 
 ##(Planned) features
  - Towns
