@@ -43,6 +43,8 @@ Most of these features are configurable in the settings file inside the plugin f
 | /nation | new | [name] | | townvalds.nation.new | Creates a new nation |
 | | leave | | | townvalds.nation.leave | Removes the town from the nation |
 | | list | | | townvalds.nation.list | Prints a list of all nations |
+| | add | [townname] | invite | townvalds.nation.add | Invites a town to the nation |
+| | join | {nationname} | | townvalds.nation.join | If the town has an invitation to a nation, joins the nation |
 | | toggle | friendlyfire | | townvalds.nation.toggle | Toggles friendly fire on or off in the current nation |
 | | set | capital | [townname]| | townvalds.nation.set.toggle | Sets the new capital of the current nation |
 | /town | new | [name] | | townvalds.town.new | Creates a new town on the current location |
@@ -51,7 +53,7 @@ Most of these features are configurable in the settings file inside the plugin f
 | | unclaim | | | townvalds.town.unclaim | Unclaims a chunk for the current town |
 | | add | [username] | | townvalds.town.add | Invites a player to the town |
 | | kick | [username] | | townvalds.town.kick | Kicks a resident of the town |
-| | join | {townname} | | townvalds.town.join | If the player has an invitation of a town, joins the town |
+| | join | {townname} | | townvalds.town.join | If the player has an invitation to a town, joins the town |
 | | leave | | | townvalds.town.leave | Leaves the current town |
 | | toggle | explosions | | townvalds.town.toggle | Toggles explosions on or off in the current town |
 | | toggle | pvp | | townvalds.town.toggle | Toggle pvp on or off in the current town |
