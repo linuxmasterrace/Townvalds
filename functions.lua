@@ -33,21 +33,21 @@ function CheckBlockPermission(Player, BlockX, BlockZ)
 end
 
 function GetPlayerTown(UUID)
-    sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
-    parameters = {UUID};
-    local result = ExecuteStatement(sql, parameters);
+    local sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
+    local parameter = {UUID};
+    local townId = ExecuteStatement(sql, parameter)[1];
 
-    if (result[1] and result[1][1]) then
-        return result[1][1];
+    if (townId) then
+        return townId[1];
     else
         return nil;
     end
 end
 
 function GetTownName(townId)
-    sql = "SELECT town_name FROM towns WHERE town_id = ?";
-    parameters = {townId};
-    local townName = ExecuteStatement(sql, parameters)[1];
+    local sql = "SELECT town_name FROM towns WHERE town_id = ?";
+    local parameter = {townId};
+    local townName = ExecuteStatement(sql, parameter)[1];
 
     if (townName) then
         return townName[1];
@@ -56,13 +56,37 @@ function GetTownName(townId)
     end
 end
 
-function GetTownId(townName)
-    sql = "SELECT town_id FROM towns WHERE town_name = ?";
-    parameters = {townName};
-    local townId = ExecuteStatement(sql, parameters)[1];
+function GetNationName(nationId)
+	local sql = "SELECT nation_name FROM nations WHERE nation_id = ?";
+	local parameter = {nationId};
+	local nationName = ExecuteStatement(sql, parameter)[1];
 
-    if(townId) then
+	if (nationName) then
+		return nationName[1];
+	else
+		return nil;
+	end
+end
+
+function GetTownId(townName)
+    local sql = "SELECT town_id FROM towns WHERE town_name = ?";
+    local parameter = {townName};
+    local townId = ExecuteStatement(sql, parameter)[1];
+
+    if (townId) then
         return townId[1];
+    else
+        return nil;
+    end
+end
+
+function GetNationId(nationName)
+	local sql = "SELECT nation_id FROM nations WHERE nation_name = ?";
+    local parameter = {nationName};
+    local nationId = ExecuteStatement(sql, parameter)[1];
+
+    if (nationId) then
+        return nationId[1];
     else
         return nil;
     end

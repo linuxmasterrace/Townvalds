@@ -273,7 +273,7 @@ end
 function TownJoin(Split, Player)
 	local UUID = Player:GetUUID();
 
-	local sql = "SELECT town_id FROM invitations WHERE player_uuid = ?";
+	local sql = "SELECT town_id FROM invitations WHERE nation_id is null AND player_uuid = ?";
 	local parameters = {UUID};
 	local invitations = ExecuteStatement(sql, parameters);
 

@@ -83,11 +83,11 @@ function NationLeave(Split, Player)
 	local parameter = {UUID};
 	local town = ExecuteStatement(sql, parameter)[1];
 
-	if(town == nil) then
-		Player:SendMessageFailure("You can not leave nation if you're not part of a town!");
+	if not (town) then
+		Player:SendMessageFailure("You can not leave a nation if you're not part of a town!");
 	elseif not (town[2] == UUID) then
 		Player:SendMessageFailure("You can not leave a nation if you're not the owner of a town!");
-	elseif (town[3] == nil) then
+	elseif not (town[3]) then
 		Player:SendMessageFailure("Your town is not part of a nation!");
 	else
 		local sql = "SELECT nation_id, nation_name, nation_capital FROM nations WHERE nation_id = ?";
@@ -153,6 +153,109 @@ function NationLeave(Split, Player)
 	return true;
 end
 
+function NationAddTown(Split, Player)
+	local UUID = Player:GetUUID();
+	local sql = "SELECT towns.town_id, towns.town_owner, towns.nation_id FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
+	local parameter = {UUID};
+	local town = ExecuteStatement(sql, parameter)[1];
+
+	if not (town) then
+		Player:SendMessageFailure("You're not part of a town'");
+	elseif not (town[3]) then
+		Player:SendMessageFailure("Your town is not part of a nation");
+	elseif not (town[2] == UUID) then
+		Player:SendMessageFailure("You can not invite a town if you're not the king of your nation");
+	else
+		local sql = "SELECT nation_id, nation_name, nation_capital FROM nations WHERE nation_id = ?";
+		local parameter = {town[3]};
+		local nation = ExecuteStatement(sql, parameter)[1];
+
+		if not (nation[3] == town[1]) then
+			Player:SendMessageFailure("You can not invite a town if you're not the king of your nation");
+		else
+			local sql = "SELECT town_id, town_name, nation_id FROM towns WHERE town_name = ?";
+			local parameter = {Split[3]};
+			local town_remote = ExecuteStatement(sql, parameter)[1];
+
+			if not (town_remote) then
+				Player:SendMessageFailure("That town does not exist");
+			elseif (town_remote[3]) then
+				Player:SendMessageFailure("That town is already part of a nation");
+			else
+				local sql = "INSERT INTO invitations (town_id, nation_id) VALUES (?, ?)";
+				local parameters = {town_remote[1], nation[1]};
+				ExecuteStatement(sql, parameters);
+
+				Player:SendMessageSuccess(town_remote[2] .. " is invited to your nation");
+			end
+		end
+	end
+
+	return true;
+end
+
+--Lets a town join a nation
+function NationJoin(Split, Player)
+	local UUID = Player:GetUUID();
+	local townId = GetPlayerTown(UUID);
+
+	if not (townId) then
+		Player:SendMessageFailure("You're not part of a town");
+		return true;
+	end
+
+	local sql = "SELECT nation_id FROM invitations WHERE nation_id is not null AND town_id = ?";
+	local parameters = {townId};
+	local invitations = ExecuteStatement(sql, parameters);
+
+	if not (invitations[1]) then
+		Player:SendMessageFailure("You have no invitations!");
+	else
+		local nationId;
+
+		if not (Split[3]) then --The player doesn't specify which nation he wants to join
+			if (invitations[2]) then --If the player has more than 1 invitation
+				Player:SendMessageFailure("You have multiple invitations, please specify which one you want to join:");
+				for key, value in pairs(invitations) do
+					Player:SendMessageInfo(GetNationName(value[1]));
+				end
+
+				return true;
+			else --If the player has only 1 invitation
+				nationId = invitations[1][1];
+			end
+		else --The player did specify which town he wants to join
+			nationId = GetNationId(Split[3]);
+		end
+
+		if not (config.invitation_duration == 0) then --If invitations are set to expire
+			local sql = "SELECT invitations.invitation_id, invitations.invitation_date, nations.nation_name FROM invitations INNER JOIN nations ON invitations.nation_id = nations.nation_id WHERE invitations.nation_id = ? AND invitations.town_id = ?";
+			local parameters = {nationId, townId};
+			local invitation = ExecuteStatement(sql, parameters)[1];
+
+			if not (os.time(os.date("!*t")) - GetTimestampFromString(invitation[2]) <= tonumber(config.invitation_duration)) then
+				local sql = "DELETE FROM invitations WHERE invitation_id = ?";
+				local parameter = {invitation[1]};
+				ExecuteStatement(sql, parameter);
+
+				Player:SendMessageFailure("Sorry, the invitation of " .. invitation[3] .. " is expired. Please request a new one from the king!");
+				return true;
+			end
+		end
+
+		local sql = "UPDATE towns SET nation_id = ? WHERE town_id = ?";
+		local parameters = {nationId, townId};
+		ExecuteStatement(sql, parameters);
+
+		local sql = "DELETE FROM invitations WHERE town_id = ? and nation_id is not null";
+		local parameters = {townId};
+		ExecuteStatement(sql, parameters);
+
+		Player:SendMessageSuccess("Your town succesfully joined the nation!");
+	end
+
+	return true;
+end
 
 --Prints a list of nations to the player
 function NationList(Split, Player)
@@ -178,9 +281,9 @@ function NationToggleFriendlyFire(Split, Player)
 	local parameter = {UUID};
 	local town = ExecuteStatement(sql, parameter)[1];
 
-	if (town == nil) then
+	if not (town) then
 		Player:SendMessageFailure("You're not part of a town");
-	elseif (town[2] == nil) then
+	elseif not (town[2]) then
 		Player:SendMessageFailure("Your town is not part of a nation");
 	else
 		local sql = "SELECT nation_name, nation_capital FROM nations WHERE nation_id = ?";
@@ -189,7 +292,7 @@ function NationToggleFriendlyFire(Split, Player)
 
 		local cTeam = Player:GetWorld():GetScoreBoard():GetTeam(nation[1]);
 
-		if not(nation[2] == town[2]) then
+		if not (nation[2] == town[2]) then
 			Player:SendMessageFailure("Your town is not the capital of this nation");
 		else
 			if(cTeam:AllowsFriendlyFire()) then
