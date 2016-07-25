@@ -47,6 +47,12 @@ g_PluginInfo =
 					HelpString = "Removes the town from the nation",
 					Permission = "townvalds.nation.leave",
 				},
+				kick =
+				{
+					Handler = NationKick,
+					HelpString = "Kicks the town from the nation",
+					Permission = "townvalds.nation.kick",
+				},
 				list =
 				{
 					Handler = NationList,
@@ -275,6 +281,11 @@ g_PluginInfo =
 		["townvalds.nation.leave"] =
 		{
 			Description = "Allows the player to remove his/her town from a nnation",
+			RecommendedGroups = "default",
+		},
+		["townvalds.nation.kick"] =
+		{
+			Description = "Allows the king to kick a town from the nation",
 			RecommendedGroups = "default",
 		},
 		["townvalds.nation.toggle"] =
