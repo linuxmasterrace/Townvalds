@@ -18,10 +18,12 @@ function Initialize(Plugin)
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_SPAWNED, OnPlayerSpawned);
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_BREAKING_BLOCK, OnPlayerBreakingBlock);
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_PLACING_BLOCK, OnPlayerPlacingBlock);
+	--cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_USING_ITEM, OnPlayerUsingItem);
 	cPluginManager.AddHook(cPluginManager.HOOK_EXPLODING, OnExploding);
 	cPluginManager.AddHook(cPluginManager.HOOK_CHAT, OnChat);
 	cPluginManager.AddHook(cPluginManager.HOOK_TAKE_DAMAGE, OnTakeDamage);
 	cPluginManager.AddHook(cPluginManager.HOOK_SPAWNING_MONSTER, OnSpawningMonster);
+	cPluginManager.AddHook(cPluginManager.HOOK_BLOCK_SPREAD, OnBlockSpread);
 
 	ini = cIniFile();
 

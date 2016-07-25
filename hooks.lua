@@ -38,3 +38,35 @@ end
 function OnPlayerPlacingBlock(Player, BlockX, BlockY, BlockZ, BlockFace, BlockType, BlockMeta)
     return CheckBlockPermission(Player, BlockX, BlockZ);
 end
+
+function OnPlayerUsingItem(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, CursorY, CursorZ, BlockType, BlockMeta)
+	if (ItemToString(Player:GetEquippedItem()) == "lighter") then
+		local sql = "SELECT towns.town_id, towns.town_fire_enabled FROM towns INNER JOIN townChunks ON towns.town_id = townChunks.town_id WHERE townChunks.chunkX = ? AND townChunks.chunkZ = ? AND townChunks.world = ?";
+		local parameters = {math.floor(BlockX / 16), math.floor(BlockZ / 16), Player:GetWorld():GetName()};
+		local town = ExecuteStatement(sql, parameters)[1];
+
+		if (town and town[2] == 0) then --If fire is disabled in this town, prevent the player from starting a fire
+			return true;
+		else
+			return false;
+		end
+	end
+
+	return false;
+end
+
+function OnBlockSpread(World, BlockX, BlockY, BlockZ, Source)
+	if (Source == ssFireSpread) then
+		local sql = "SELECT towns.town_id, towns.town_fire_enabled FROM towns INNER JOIN townChunks ON towns.town_id = townChunks.town_id WHERE townChunks.chunkX = ? AND townChunks.chunkZ = ? AND townChunks.world = ?";
+		local parameters = {math.floor(BlockX / 16), math.floor(BlockZ / 16), World:GetName()};
+		local town = ExecuteStatement(sql, parameters)[1];
+
+		if (town and town[2] == 0) then --If fire is disabled in this town, prevent the fire from spreading
+			return true;
+		else
+			return false;
+		end
+	end
+
+	return false;
+end
