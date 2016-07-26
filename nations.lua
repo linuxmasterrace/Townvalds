@@ -186,7 +186,7 @@ function NationAddTown(Split, Player)
 				local parameters = {town_remote[1], nation[1]};
 				ExecuteStatement(sql, parameters);
 
-				Player:SendMessageSuccess(town_remote[2] .. " is invited to your nation");
+				Player:SendMessageSuccess("The town " .. town_remote[2] .. " is invited to your nation");
 			end
 		end
 	end
