@@ -24,10 +24,12 @@ function Initialize(Plugin)
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_SPAWNED, OnPlayerSpawned);
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_BREAKING_BLOCK, OnPlayerBreakingBlock);
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_PLACING_BLOCK, OnPlayerPlacingBlock);
+	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_USING_ITEM, OnPlayerUsingItem);
 	cPluginManager.AddHook(cPluginManager.HOOK_EXPLODING, OnExploding);
 	cPluginManager.AddHook(cPluginManager.HOOK_CHAT, OnChat);
 	cPluginManager.AddHook(cPluginManager.HOOK_TAKE_DAMAGE, OnTakeDamage);
 	cPluginManager.AddHook(cPluginManager.HOOK_SPAWNING_MONSTER, OnSpawningMonster);
+	cPluginManager.AddHook(cPluginManager.HOOK_BLOCK_SPREAD, OnBlockSpread);
 
 	--Create a new database if this is the first load, otherwise open the existing one
 	if not (cFile:IsFile(PLUGIN:GetLocalFolder() .. cFile:GetPathSeparator() .. config.dbname)) then -- If true, means database is deleted, or the plugin runs for the first time

@@ -43,6 +43,8 @@ Most of these features are configurable in the settings file inside the plugin f
 | /nation | new | [name] | | townvalds.nation.new | Creates a new nation |
 | | leave | | | townvalds.nation.leave | Removes the town from the nation |
 | | list | | | townvalds.nation.list | Prints a list of all nations |
+| | add | [townname] | invite | townvalds.nation.add | Invites a town to the nation |
+| | join | {nationname} | | townvalds.nation.join | If the town has an invitation to a nation, joins the nation |
 | | toggle | friendlyfire | | townvalds.nation.toggle | Toggles friendly fire on or off in the current nation |
 | | set | capital | [townname]| | townvalds.nation.set.toggle | Sets the new capital of the current nation |
 | /town | new | [name] | | townvalds.town.new | Creates a new town on the current location |
@@ -51,7 +53,7 @@ Most of these features are configurable in the settings file inside the plugin f
 | | unclaim | | | townvalds.town.unclaim | Unclaims a chunk for the current town |
 | | add | [username] | | townvalds.town.add | Invites a player to the town |
 | | kick | [username] | | townvalds.town.kick | Kicks a resident of the town |
-| | join | {townname} | | townvalds.town.join | If the player has an invitation of a town, joins the town |
+| | join | {townname} | | townvalds.town.join | If the player has an invitation to a town, joins the town |
 | | leave | | | townvalds.town.leave | Leaves the current town |
 | | toggle | explosions | | townvalds.town.toggle | Toggles explosions on or off in the current town |
 | | toggle | pvp | | townvalds.town.toggle | Toggle pvp on or off in the current town |
@@ -65,8 +67,8 @@ Most of these features are configurable in the settings file inside the plugin f
 | /switchchat | | {global/nation/town/local} | /sc, /gc, /nc, /tc, /lc | townvalds.chat.switch | Switches the active chat channel |
 
 ##License
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU Affero General Public License along with this program. If not, see http://www.gnu.org/licenses/.
+You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
