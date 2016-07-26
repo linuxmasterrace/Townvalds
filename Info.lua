@@ -47,7 +47,6 @@ g_PluginInfo =
 					HelpString = "Removes the town from the nation",
 					Permission = "townvalds.nation.leave",
 				},
-<<<<<<< HEAD
 				add =
 				{
 					Alias = {"invite"},
@@ -60,13 +59,12 @@ g_PluginInfo =
 					Handler= NationJoin,
 					HelpString = "If the town has an invitation to a nation, joins the nation",
 					Permission = "townvalds.nation.join",
-=======
+				},
 				kick =
 				{
 					Handler = NationKick,
 					HelpString = "Kicks the town from the nation",
 					Permission = "townvalds.nation.kick",
->>>>>>> upstream/master
 				},
 				list =
 				{
