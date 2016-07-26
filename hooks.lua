@@ -19,6 +19,9 @@ function OnPlayerJoined(Player) -- This is called after connection
 	if (townSpawn) then
 		local spawnWorld = cRoot:Get():GetWorld(townSpawn[4]);
 		Player:SetBedPos(Vector3i(townSpawn[1], townSpawn[2], townSpawn[3]), spawnWorld);
+	else
+		local spawnWorld = cRoot:Get():GetDefaultWorld();
+		Player:SetBedPos(Vector3i(spawnWorld:GetSpawnX(), spawnWorld:GetSpawnY(), spawnWorld:GetSpawnZ()), spawnWorld);
 	end
 
 	return true;
