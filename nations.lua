@@ -153,6 +153,52 @@ function NationLeave(Split, Player)
 	return true;
 end
 
+function NationKick(Split, Player)
+	if not (Split[3]) then
+		Player:SendMessageFailure("Please specify which town you want to kick");
+		return true;
+	end
+
+	local UUID = Player:GetUUID();
+	local sql = "SELECT towns.town_id, towns.town_owner, towns.nation_id FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
+	local parameter = {UUID};
+	local town = ExecuteStatement(sql, parameter)[1];
+
+	if not (town) then
+		Player:SendMessageFailure("You're not part of a town");
+	elseif not (town[3]) then
+		Player:SendMessageFailure("Your town is not part of a nation");
+	elseif not (town[2] == UUID) then --If the player is not the mayor of his town, then there is no way he is the king
+		Player:SendMessageFailure("You're not the king of this nation");
+	else
+		local sql = "SELECT nation_id, nation_name, nation_capital FROM nations WHERE nation_id = ?";
+		local parameter = {town[3]};
+		local nation = ExecuteStatement(sql, parameter)[1];
+
+		if not (nation[3] == town[1]) then
+			Player:SendMessageFailure("You're not the king of this nation");
+		else
+			local townId_remote = GetTownId(Split[3]);
+			local sql = "SELECT town_id, town_name, nation_id FROM towns WHERE town_id = ?";
+			local parameter = {townId_remote};
+			local town_remote = ExecuteStatement(sql, parameter)[1];
+
+			if not (town_remote) then
+				Player:SendMessageFailure("That town is not part of a nation");
+			elseif not (town_remote[3] == nation[1]) then
+				Player:SendMessageFailure("That town is not part of your nation");
+			else
+				local sql = "UPDATE towns SET nation_id = NULL WHERE town_id = ?";
+				local parameter = {town_remote[1]};
+				ExecuteStatement(sql, parameter);
+
+				Player:SendMessageSuccess("You kicked " .. town_remote[2] .. " from your nation");
+			end
+		end
+	end
+
+	return true;
+end
 
 --Prints a list of nations to the player
 function NationList(Split, Player)
@@ -219,6 +265,8 @@ function NationSetCapital(Split, Player)
 
 	if not (town) then
 		Player:SendMessageFailure("You're not part of a town");
+	elseif not (town[3]) then
+		Player:SendMessageFailure("Your town is not part of a nation");
 	elseif not (town[2] == UUID) then --If the player is not the mayor of his town, then there is no way he is the king
 		Player:SendMessageFailure("You're not the king of this nation");
 	else
@@ -226,9 +274,7 @@ function NationSetCapital(Split, Player)
 		local parameter = {town[3]};
 		local nation = ExecuteStatement(sql, parameter)[1];
 
-		if not (nation) then
-			Player:SendMessageFailure("You're town is not part of a nation");
-		elseif not (nation[3] == town[1]) then --If the player's town is not the capital of the nation, then there is no way he is the king
+		if not (nation[3] == town[1]) then --If the player's town is not the capital of the nation, then there is no way he is the king
 			Player:SendMessageFailure("You're not the king of this nation");
 		else
 			local townId_remote = GetTownId(Split[4]);
