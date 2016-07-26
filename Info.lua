@@ -176,6 +176,18 @@ g_PluginInfo =
 						},
 					}
 				},
+				["set"] =
+				{
+					Subcommands =
+					{
+						spawn =
+						{
+							Handler = TownSpawnSet,
+							HelpString = "Sets the town spawn at the current position",
+							Permission = "townvalds.town.spawn.set"
+						},
+					}
+				},
 				list =
 				{
 					Handler = TownList,
@@ -187,6 +199,13 @@ g_PluginInfo =
 					Handler = TownRank,
 					HelpString = "Lists available ranks, or grant and remove a rank to a resident of the town",
 					Permission = "townvalds.town.rank",
+				},
+				spawn =
+				{
+					Alias = {"teleport"},
+					Handler = TownSpawn,
+					HelpString = "Teleports the player to a town spawn",
+					Permission = "townvalds.town.spawn",
 				},
 			}
 		},
@@ -364,6 +383,26 @@ g_PluginInfo =
 		["townvalds.town.toggle"] =
 		{
 			Description = "Allows the player to toggle town protections",
+			RecommendedGroups = "default",
+		},
+		["townvalds.town.spawn"] =
+		{
+			Description = "Allows the player to teleport to their towns spawn",
+			RecommendedGroups = "default",
+		},
+		["townvalds.town.spawn.other"] =
+		{
+			Description = "Allows the player to teleport to another towns spawn. This is used together with the 'teleport_to_friendly_town_spawns_only' config option",
+			RecommendedGroups = "default",
+		},
+		["townvalds.town.spawn.admin"] =
+		{
+			Description = "Allows the player to always teleport to any town",
+			RecommendedGroups = "admins",
+		},
+		["townvalds.town.spawn.set"] =
+		{
+			Description = "Allows the player to set the town spawn. This is used together with the 'enable_town_spawns' config option",
 			RecommendedGroups = "default",
 		},
 		["townvalds.plot.claim"] =

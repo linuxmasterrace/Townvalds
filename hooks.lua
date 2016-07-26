@@ -11,6 +11,19 @@ function OnPlayerJoined(Player) -- This is called after connection
 	ExecuteStatement(sql, parameters);
 	Channel[UUID] = "global";
 
+	--Make sure if the town of the player has a new spawn since last join, to set the new spawn
+	local sql = "SELECT towns.town_spawnX, towns.town_spawnY, towns.town_spawnZ, towns.town_spawnWorld FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
+	local parameter = {UUID};
+	local townSpawn = ExecuteStatement(sql, parameter)[1];
+
+	if (townSpawn) then
+		local spawnWorld = cRoot:Get():GetWorld(townSpawn[4]);
+		Player:SetBedPos(Vector3i(townSpawn[1], townSpawn[2], townSpawn[3]), spawnWorld);
+	else
+		local spawnWorld = cRoot:Get():GetDefaultWorld();
+		Player:SetBedPos(Vector3i(spawnWorld:GetSpawnX(), spawnWorld:GetSpawnY(), spawnWorld:GetSpawnZ()), spawnWorld);
+	end
+
 	return true;
 end
 
