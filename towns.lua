@@ -24,8 +24,8 @@ function TownCreate(Split, Player)
 			if (remote_town[1]) then --There is already a town close-by
 				Player:SendMessageFailure("You're too close to an existing town, please move further away before trying to create a new town.");
 			else -- Insert the town data in the database
-				local sql = "INSERT INTO towns (town_name, town_owner, town_explosions_enabled, town_pvp_enabled) VALUES (?, ?, ?, ?)";
-				local parameters = {Split[3], UUID, 0, 0};
+				local sql = "INSERT INTO towns (town_name, town_owner, town_explosions_enabled, town_pvp_enabled, town_spawnX, town_spawnY, town_spawnZ, town_spawnWorld) VALUES (?, ?, ?, ?, ?, ? ,?, ?)";
+				local parameters = {Split[3], UUID, 0, 0, math.floor(Player:GetPosX()), math.floor(Player:GetPosY()), math.floor(Player:GetPosZ()), Player:GetWorld():GetName()};
 				local townId = ExecuteStatement(sql, parameters);
 
 				local sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ, world) VALUES (?, ?, ?, ?)";
@@ -35,6 +35,11 @@ function TownCreate(Split, Player)
 				local sql = "UPDATE residents SET town_id = ? WHERE player_uuid = ?";
 				local parameters = {townId, UUID};
 				ExecuteStatement(sql, parameters);
+
+				if (config.enable_town_spawns == 1) then
+					--Setting mayor spawn position to the new town spawn
+					Player:SetBedPos(Vector3i(math.floor(Player:GetPosX()), math.floor(Player:GetPosY()), math.floor(Player:GetPosZ())), Player:GetWorld());
+				end
 
 				Player:SendMessageSuccess("Created a new town called " .. Split[3]);
 			end
@@ -320,6 +325,13 @@ function TownJoin(Split, Player)
 		local parameters = {UUID};
 		ExecuteStatement(sql, parameters);
 
+		local sql = "SELECT town_spawnX, town_spawnY, town_spawnZ, town_spawnWorld FROM towns WHERE town_id = ?";
+		local parameter = {townId};
+		local town = ExecuteStatement(sql, parameter)[1];
+
+		local spawnWorld = cRoot:Get():GetWorld(town[4]); --Have to do this seperately, otherwise Cuberite complains
+		Player:SetBedPos(Vector3i(town[1], town[2], town[3]), spawnWorld);
+
 		Player:SendMessageSuccess("You succesfully joined the town!");
 	end
 
@@ -363,6 +375,9 @@ function TownLeave(Split, Player)
 			local sql = "UPDATE townChunks SET owner = NULL WHERE owner = ?";
 			local parameter = {UUID};
 			ExecuteStatement(sql, parameter);
+
+			local mainSpawn = cRoot:Get():GetDefaultWorld();
+			Player:SetBedPos(Vector3i(mainSpawn:GetSpawnX(), mainSpawn:GetSpawnY(), mainSpawn:GetSpawnZ()), mainSpawn)
 
 			local sql = "SELECT player_uuid FROM residents WHERE town_id = ?";
 			local parameter = {townId};
@@ -573,6 +588,104 @@ function TownToggleMobs(Split, Player)
 			end
 
 			ExecuteStatement(sql, parameter);
+		end
+	end
+
+	return true;
+end
+
+function TownSpawn(Split, Player)
+	if not (config.enable_town_spawns == 1) and not (Player:HasPermission("townvalds.town.spawn.admin")) then
+		Player:SendMessageFailure("Teleporting to town spawns is disabled by the server administrator");
+	else
+		local townId = GetPlayerTown(Player:GetUUID());
+		local townId_target;
+		if (Split[3]) and not (GetTownId(Split[3]) == townId) then
+			if not (Player:HasPermission("townvalds.town.spawn.other")) and not (Player:HasPermission("townvalds.town.spawn.admin")) then
+				Player:SendMessageFailure("You are not allowed to teleport to another town");
+				return true;
+			else
+				townId_target = GetTownId(Split[3]);
+
+				if not (Player:HasPermission("townvalds.town.spawn.admin")) and (config.teleport_to_friendly_town_spawns_only == 1) then
+					local sql = "SELECT nation_id FROM towns WHERE town_id = ?";
+					local parameter = {townId};
+					local nationId = ExecuteStatement(sql, parameter)[1];
+
+					local sql = "SELECT nation_id FROM towns WHERE town_id = ?";
+					local parameter = {townId_target};
+					local nationId_target = ExecuteStatement(sql, parameter)[1];
+
+					if not (nationId[1] == nationId_target[1]) then
+						Player:SendMessageFailure("You are only allowed to teleport to friendly towns (towns within your nation)");
+						return true;
+					end
+				end
+			end
+		else
+			if not (townId) then
+				Player:SendMessageFailure("You are not part of a town you can teleport to");
+				return true;
+			else
+				townId_target = townId;
+			end
+		end
+
+		local sql = "SELECT town_spawnX, town_spawnY, town_spawnZ, town_spawnWorld FROM towns WHERE town_id = ?";
+		local parameter = {townId_target};
+		local spawn_target = ExecuteStatement(sql, parameter)[1];
+
+		if not (spawn_target) then
+			Player:SendMessageFailure("That town does not exist");
+		else
+			local world_target = cRoot:Get():GetWorld(spawn_target[4]);
+
+			if (world_target:GetName() == Player:GetWorld():GetName()) then --If the player is already in the world of the spawn, just teleport
+				Player:TeleportToCoords(spawn_target[1], spawn_target[2], spawn_target[3]);
+			else --Otherwise move the player between dimensions
+				Player:MoveToWorld(world_target, false, Vector3d(spawn_target[1], spawn_target[2], spawn_target[3]));
+			end
+		end
+	end
+
+	return true;
+end
+
+function TownSpawnSet(Split, Player)
+	if not (config.enable_town_spawns) then
+		Player:SendMessageFailure("Town spawns are disabled by the server administrator");
+	else
+		local UUID = Player:GetUUID();
+
+		local sql = "SELECT towns.town_id, towns.town_owner FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
+		local parameter = {UUID};
+		local town = ExecuteStatement(sql, parameter)[1];
+
+		if not (town) then
+			Player:SendMessageFailure("You have to be part of a town to set it's spawn");
+		elseif not (town[2] == UUID) then
+			Player:SendMessageFailure("You have to be the mayor of your town to set it's spawn");
+		else
+			local sql = "SELECT player_uuid FROM residents WHERE town_id = ?";
+			local parameter = {town[1]};
+			local townMembers = ExecuteStatement(sql, parameter);
+
+			cRoot:Get():ForEachPlayer(
+			function (cPlayer)
+				local cPlayerUUID = cPlayer:GetUUID();
+				for key, value in pairs(townMembers) do
+					if (cPlayerUUID == value[1]) then
+						cPlayer:SetBedPos(Vector3i(Player:GetPosX(), Player:GetPosY(), Player:GetPosZ()), Player:GetWorld());
+					end
+				end
+			end
+			);
+
+			local sql = "UPDATE towns SET town_spawnX = ?, town_spawnY = ?, town_spawnZ = ?, town_spawnWorld = ? WHERE town_id = ?";
+			local parameters = {Player:GetPosX(), Player:GetPosY(), Player:GetPosZ(), Player:GetWorld():GetName(), town[1]};
+			ExecuteStatement(sql, parameters);
+
+			Player:SendMessageSuccess("The new town spawn is set");
 		end
 	end
 

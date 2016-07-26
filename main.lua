@@ -12,6 +12,12 @@ function Initialize(Plugin)
 	RegisterPluginInfoCommands();
 	RegisterPluginInfoConsoleCommands();
 
+	ini = cIniFile();
+
+	--Create a new config if this is the first load, otherwise load the existing config file
+	LoadConfig();
+
+	LOG("[" .. PLUGIN:GetName() .. "] Enabling hooks");
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_JOINED, OnPlayerJoined);
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_MOVING, OnPlayerMoving);
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_DESTROYED, OnPlayerDestroyed);
@@ -22,11 +28,6 @@ function Initialize(Plugin)
 	cPluginManager.AddHook(cPluginManager.HOOK_CHAT, OnChat);
 	cPluginManager.AddHook(cPluginManager.HOOK_TAKE_DAMAGE, OnTakeDamage);
 	cPluginManager.AddHook(cPluginManager.HOOK_SPAWNING_MONSTER, OnSpawningMonster);
-
-	ini = cIniFile();
-
-	--Create a new config if this is the first load, otherwise load the existing config file
-	LoadConfig();
 
 	--Create a new database if this is the first load, otherwise open the existing one
 	if not (cFile:IsFile(PLUGIN:GetLocalFolder() .. cFile:GetPathSeparator() .. config.dbname)) then -- If true, means database is deleted, or the plugin runs for the first time
