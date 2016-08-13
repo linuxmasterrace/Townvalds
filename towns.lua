@@ -7,7 +7,7 @@ function TownCreate(Split, Player)
 	local UUID = Player:GetUUID();
 	local townId = GetPlayerTown(UUID);
 
-	if not (townId == nil) then
+	if (townId) then
 		Player:SendMessageFailure("Please leave your current town before you create a new one");
 	else
 		local sql = "SELECT town_name FROM towns WHERE town_name = ?";
@@ -24,16 +24,19 @@ function TownCreate(Split, Player)
 			if (remote_town[1]) then --There is already a town close-by
 				Player:SendMessageFailure("You're too close to an existing town, please move further away before trying to create a new town.");
 			else -- Insert the town data in the database
-				local sql = "INSERT INTO towns (town_name, town_owner, town_explosions_enabled, town_pvp_enabled, town_spawnX, town_spawnY, town_spawnZ, town_spawnWorld) VALUES (?, ?, ?, ?, ?, ? ,?, ?)";
-				local parameters = {Split[3], UUID, 0, 0, math.floor(Player:GetPosX()), math.floor(Player:GetPosY()), math.floor(Player:GetPosZ()), Player:GetWorld():GetName()};
+				local sql = "INSERT INTO towns (town_name, town_explosions_enabled, town_pvp_enabled, town_spawnX, town_spawnY, town_spawnZ, town_spawnWorld) VALUES (?, ?, ?, ?, ? ,?, ?)";
+				local parameters = {Split[3], 0, 0, math.floor(Player:GetPosX()), math.floor(Player:GetPosY()), math.floor(Player:GetPosZ()), Player:GetWorld():GetName()};
 				local townId = ExecuteStatement(sql, parameters);
 
 				local sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ, world) VALUES (?, ?, ?, ?)";
 				local parameters = {townId, Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 				ExecuteStatement(sql, parameters);
 
-				local sql = "UPDATE residents SET town_id = ? WHERE player_uuid = ?";
-				local parameters = {townId, UUID};
+				local sql = "INSERT INTO town_residents (player_uuid, town_id, town_rank) VALUES (?, ?, ?)";
+				local parameters = {UUID, townId, 'resident'}; --Add resident rank to later on make sure the player can't be kicked by removing the rank
+				ExecuteStatement(sql, parameters);
+
+				local parameters = {UUID, townId, 'mayor'};
 				ExecuteStatement(sql, parameters);
 
 				if (config.enable_town_spawns == 1) then
@@ -52,7 +55,10 @@ end
 Deleting = {};
 function TownDelete(Split, Player)
 	local UUID = Player:GetUUID();
-	local townId = GetPlayerTown(UUID);
+	local town = {
+		GetPlayerTown(UUID),
+		GetPlayerTownRank(UUID);
+	};
 
 	if (Deleting[UUID]) then
 		local sql = "SELECT town_name FROM towns WHERE town_id = ?";
@@ -63,33 +69,34 @@ function TownDelete(Split, Player)
 		Deleting[UUID] = nil;
 		Player:SendMessageSuccess(townName .. " has been deleted");
 	else
-		local town;
-		if (Split[3]) then
-			local sql = "SELECT town_id, town_name, town_owner FROM towns WHERE town_name = ?";
-			local parameter = {Split[3]};
-			town = ExecuteStatement(sql, parameter)[1];
+		local town_target;
 
-			if not (town) then
+		if (Split[3]) then
+			local sql = "SELECT town_id, town_name FROM towns WHERE town_name = ?";
+			local parameter = {Split[3]};
+			town_target = ExecuteStatement(sql, parameter)[1];
+
+			if not (town_target) then
 				Player:SendMessageFailure("That town does not exist");
 				return true;
 			end
 		else
-			local sql = "SELECT town_id, town_name, town_owner FROM towns WHERE town_id = ?";
-			local parameter = {townId};
-			town = ExecuteStatement(sql, parameter)[1];
+			local sql = "SELECT town_id, town_name FROM towns WHERE town_id = ?";
+			local parameter = {town[1]};
+			town_target = ExecuteStatement(sql, parameter)[1];
 		end
 
-		if (town[1] == townId) then
-			if (town[3] == UUID) then
-				Deleting[UUID] = town[1];
-				Player:SendMessageInfo("Are you sure you want to delete " .. town[2] .. "?");
+		if (town[1] == town_target[1]) then
+			if (TownRanks[town[2]] == TownRanks['mayor']) then
+				Deleting[UUID] = town_target[1];
+				Player:SendMessageInfo("Are you sure you want to delete " .. town_target[2] .. "?");
 				Player:SendMessageInfo("Use `/town delete` again if you wish to continue.");
 			else
 				if not (Player:HasPermission("townvalds.town.delete.other")) then
-					Player:SendMessageFailure("You have to be the owner of your town to delete it");
+					Player:SendMessageFailure("You have to be the mayor of your town to delete it");
 				else
-					Deleting[UUID] = town[1];
-					Player:SendMessageInfo("Are you sure you want to delete " .. town[2] .. "?");
+					Deleting[UUID] = town_target[1];
+					Player:SendMessageInfo("Are you sure you want to delete " .. town_target[2] .. "?");
 					Player:SendMessageInfo("Use `/town delete` again if you wish to continue.");
 				end
 			end
@@ -97,8 +104,8 @@ function TownDelete(Split, Player)
 			if not (Player:HasPermission("townvalds.town.delete.other")) then
 				Player:SendMessageFailure("You are not allowed to delete someone else's town");
 			else
-				Deleting[UUID] = town[1];
-				Player:SendMessageInfo("Are you sure you want to delete " .. town[2] .. "?");
+				Deleting[UUID] = town_target[1];
+				Player:SendMessageInfo("Are you sure you want to delete " .. town_target[2] .. "?");
 				Player:SendMessageInfo("Use `/town delete` again if you wish to continue.");
 			end
 		end
@@ -110,33 +117,30 @@ end
 function TownClaim(Split, Player)
 	local UUID = Player:GetUUID();
 
+	local town = {
+		GetPlayerTown(UUID),
+		GetPlayerTownRank(UUID);
+	};
+
 	if (InTown[UUID]) then
 		Player:SendMessageFailure("You can't claim land that is already part of a town!");
+	elseif not (town[1]) then
+		Player:SendMessageFailure("You have to be a resident of a town to claim land");
+	elseif not (TownRanks[town[2]] >= TownRanks['assistant']) then
+		Player:SendMessageFailure("You have to be higher ranked to claim land");
 	else
-		local townId = GetPlayerTown(Player:GetUUID());
+		local sql = "SELECT town_id FROM townChunks WHERE town_id = ? AND (chunkX = ? + 1 OR chunkX = ? OR chunkX = ? - 1) AND (chunkZ = ? + 1 OR chunkZ = ? OR chunkZ = ? - 1)";
+		local parameters = {town[1], Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkZ(), Player:GetChunkZ(), Player:GetChunkZ()};
+		local result = ExecuteStatement(sql, parameters)[1];
 
-		local sql = "SELECT towns.town_id, towns.town_owner FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
-		local parameter = {UUID};
-		local town = ExecuteStatement(sql, parameter)[1];
+		if not (result) then
+			Player:SendMessageFailure("You have to be next to your town to claim land!");
+		else -- The chunk to be claimed is next to an already existing chunk of the town
+			local sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ, world) VALUES (?, ?, ?, ?)";
+			local parameters = {town[1], Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
+			ExecuteStatement(sql, parameters);
 
-		if (town == nil) then
-			Player:SendMessageFailure("You can't claim land if you're not part of a town!");
-		elseif not (town[2] == UUID) then
-			Player:SendMessageFailure("You can't claim land if you're not the mayor of your town!");
-		else
-			local sql = "SELECT town_id FROM townChunks WHERE town_id = ? AND (chunkX = ? + 1 OR chunkX = ? OR chunkX = ? - 1) AND (chunkZ = ? + 1 OR chunkZ = ? OR chunkZ = ? - 1)";
-			local parameters = {townId, Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkZ(), Player:GetChunkZ(), Player:GetChunkZ()};
-			local result = ExecuteStatement(sql, parameters)[1];
-
-			if not (result) then
-				Player:SendMessageFailure("You have to be next to your town to claim land!");
-			else -- The chunk to be claimed is next to an already existing chunk of the town
-				local sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ, world) VALUES (?, ?, ?, ?)";
-				local parameters = {town[1], Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
-				ExecuteStatement(sql, parameters);
-
-				Player:SendMessageSuccess("Land succesfully claimed");
-			end
+			Player:SendMessageSuccess("Land succesfully claimed");
 		end
 	end
 
@@ -146,33 +150,30 @@ end
 function TownUnclaim(Split, Player)
 	local UUID = Player:GetUUID();
 
+	local town = {
+		GetPlayerTown(UUID),
+		GetPlayerTownRank(UUID);
+	};
+
 	if not (InTown[UUID]) then
 		Player:SendMessageFailure("You can't unclaim land if you're not inside a town!");
+	elseif not (town[1]) then
+		Player:SendMessageFailure("You have to be a resident of a town to unclaim land");
+	elseif not (TownRanks[town[2]] >= TownRanks['assistant']) then
+		Player:SendMessageFailure("You have to be higher ranked to unclaim land");
 	else
-		local townId = GetPlayerTown(UUID);
+		local sql = "SELECT COUNT(*) FROM townChunks WHERE town_id = ?";
+		local parameter = {town[1]};
+		local chunkCount = ExecuteStatement(sql, parameter)[1][1];
 
-		local sql = "SELECT town_owner FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
-		local parameter = {UUID};
-		local town = ExecuteStatement(sql, parameter)[1];
-
-		if (town == nil) then
-			Player:SendMessageFailure("You can't unclaim land if you're not part of this town!");
-		elseif not (town[1] == UUID) then
-			Player:SendMessageFailure("You can't unclaim land if you're not the mayor of this town!");
+		if (chunkCount == 1) then
+			Player:SendMessageFailure("Since this is the last chunk of this town, you can't remove it!");
 		else
-			local sql = "SELECT COUNT(*) FROM townChunks WHERE town_id = ?";
-			local parameter = {townId};
-			local chunkCount = ExecuteStatement(sql, parameter)[1][1];
+			local sql = "DELETE FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ? AND world = ?";
+			local parameters = {town[1], Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
+			ExecuteStatement(sql, parameters);
 
-			if (chunkCount == 1) then
-				Player:SendMessageFailure("Since this is the last chunk of this town, you can't remove it!");
-			else
-				local sql = "DELETE FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ? AND world = ?";
-				local parameters = {townId, Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
-				ExecuteStatement(sql, parameters);
-
-				Player:SendMessageSuccess("Land succesfully unclaimed.");
-			end
+			Player:SendMessageSuccess("Land succesfully unclaimed.");
 		end
 	end
 
@@ -186,34 +187,36 @@ function TownAddPlayer(Split, Player)
 	end
 
 	local UUID = Player:GetUUID();
-	local townId = GetPlayerTown(UUID);
+	local town = {
+		GetPlayerTown(UUID),
+		GetPlayerTownRank(UUID);
+	};
 
-	if not (townId) then
-		Player:SendMessageFailure("You have to be in a town to invite players!");
+	local UUID_target = cMojangAPI:GetUUIDFromPlayerName(Split[3], true);
+	local town_target = {
+		GetPlayerTown(UUID_target),
+		GetPlayerTownRank(UUID_target);
+	};
+
+	if not (town[1]) then
+		Player:SendMessageFailure("You have to be in a town to invite players");
+	elseif not (TownRanks[town[2]] >= TownRanks['assistant']) then
+		Player:SendMessageFailure("You have to be higher ranked to invite players");
 	else
-		local UUID_target = cMojangAPI:GetUUIDFromPlayerName(Split[3], true);
-
-		if (UUID_target == "") then
-			Player:SendMessageFailure("This player does not exist.");
-			return true;
-		end
-
-		local townId_target = GetPlayerTown(UUID_target);
-
-		if (townId_target == townId) then
+		if (town_target[1] == town[1]) then
 			Player:SendMessageFailure(Split[3] .. " already belongs to your town");
-		elseif (townId_target) then
+		elseif (town_target[1]) then
 			Player:SendMessageFailure(Split[3] .. " already belongs to a town");
 		else
 			local sql = "SELECT * FROM invitations WHERE player_uuid = ? AND town_id = ?";
-			local parameters = {UUID_target, townId};
+			local parameters = {UUID_target, town[1]};
 			local result = ExecuteStatement(sql, parameters)[1];
 
 			if (result) then
 				Player:SendMessageFailure(Split[3] .. " is already invited to your town");
 			else
 				local sql = "INSERT INTO invitations (player_uuid, town_id) VALUES (?, ?)";
-				local parameters = {UUID_target, townId};
+				local parameters = {UUID_target, town[1]};
 				ExecuteStatement(sql, parameters);
 
 				Player:SendMessageSuccess(Split[3] .. " is succesfully invited to your town");
@@ -225,36 +228,38 @@ function TownAddPlayer(Split, Player)
 end
 
 function TownKickPlayer(Split, Player)
+	local UUID = Player:GetUUID();
 	if (Split[3] == nil) then
 		Player:SendMessageFailure("You need to specify a player.");
 		return true;
 	end
 
-	local UUID = Player:GetUUID();
-	local townId = GetPlayerTown(UUID);
+	local town = {
+		GetPlayerTown(UUID),
+		GetPlayerTownRank(UUID);
+	};
+
 	local UUID_target = cMojangAPI:GetUUIDFromPlayerName(Split[3]);
+	local town_target = {
+		GetPlayerTown(UUID_target),
+		GetPlayerTownRank(UUID_target);
+	};
 
-	if (UUID_target == "") then
-		Player:SendMessageFailure("This player does not exist.");
-		return true;
-	elseif (UUID_target == UUID) then
-		Player:SendMessageFailure("You can't kick yourself");
-		return true;
-	end
-
-	if not (townId) then
-		Player:SendMessageFailure("You have to be in a town to kick players");
-	elseif not (townId == GetPlayerTown(UUID_target)) then
+	if not (town[1]) then
+		Player:SendMessageFailure("You have to be a resident of a town to kick players from it");
+	elseif not (TownRanks[town[2]] >= TownRanks['assistant']) then
+		Player:SendMessageFailure("You have to be higher ranked to kick players from your town");
+	elseif not (town_target) or not (town[1] == town_target[1]) then
 		Player:SendMessageFailure(Split[3] .. " is not a resident of your town");
 	else
-		local sql = "SELECT town_name, town_owner FROM towns WHERE town_id = ?";
-		local parameter = {townId};
-		local town = ExecuteStatement(sql, parameter)[1];
-
-		if not (town[2] == UUID) then
-			Player:SendMessageFailure("You have to be the town mayor to kick residents")
+		if (UUID_target == "") then
+			Player:SendMessageFailure("This player does not exist.");
+		elseif (UUID_target == UUID) then
+			Player:SendMessageFailure("You can't kick yourself");
+		elseif not (TownRanks[town[2]] > TownRanks[town_target[2]]) then
+			Player:SendMessageFailure("You have to be higher ranked to kick this player");
 		else
-			local sql = "UPDATE residents SET town_id = NULL WHERE player_uuid = ?";
+			local sql = "DELETE FROM town_residents WHERE player_uuid = ?";
 			local parameter = {UUID_target};
 			ExecuteStatement(sql, parameter);
 
@@ -262,7 +267,10 @@ function TownKickPlayer(Split, Player)
 
 			cRoot:Get():DoWithPlayerByUUID(UUID_target,
 			function (Player_target)
-				Player_target:SendMessageInfo("You have been kicked from " .. town[1] .. " by " .. Player:GetName());
+				local sql = "SELECT town_name FROM towns WHERE town_id = ?";
+				local parameter = {town_target[1]};
+				town_target[3] = ExecuteStatement(sql, parameter)[1][1];
+				Player_target:SendMessageInfo("You have been kicked from " .. town_target[3] .. " by " .. Player:GetName());
 			end
 			);
 
@@ -317,8 +325,8 @@ function TownJoin(Split, Player)
 			end
 		end
 
-		local sql = "UPDATE residents SET town_id = ? WHERE player_uuid = ?";
-		local parameters = {townId, UUID};
+		local sql = "INSERT INTO town_residents (player_uuid, town_id, town_rank) VALUES (?, ?, 'resident')";
+		local parameters = {UUID, townId};
 		ExecuteStatement(sql, parameters);
 
 		local sql = "DELETE FROM invitations WHERE player_uuid = ?";
@@ -342,7 +350,7 @@ Leaving = {};
 function TownLeave(Split, Player)
 	local UUID = Player:GetUUID();
 
-	local sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
+	local sql = "SELECT town_id FROM town_residents WHERE player_uuid = ?";
 	local parameter = {UUID};
 	local townId = ExecuteStatement(sql, parameter)[1][1];
 
@@ -350,7 +358,7 @@ function TownLeave(Split, Player)
 		Player:SendMessageFailure("You can't leave a town if you're not in one");
 	else
 		if not (Leaving[UUID]) then
-			local sql = "SELECT player_name FROM residents WHERE town_id = ?";
+			local sql = "SELECT player_name FROM residents INNER JOIN town_residents ON residents.player_uuid = town_residents.player_uuid WHERE town_id = ?";
 			local parameter = {townId};
 			local playersInTown = ExecuteStatement(sql, parameter);
 
@@ -368,7 +376,7 @@ function TownLeave(Split, Player)
 			local parameter = {townId};
 			local townName = ExecuteStatement(sql, parameter)[1][1];
 
-			local sql = "UPDATE residents SET town_id = NULL WHERE player_uuid = ?";
+			local sql = "DELETE FROM town_residents WHERE player_uuid = ?";
 			local parameter = {UUID};
 			ExecuteStatement(sql, parameter);
 
@@ -379,7 +387,7 @@ function TownLeave(Split, Player)
 			local mainSpawn = cRoot:Get():GetDefaultWorld();
 			Player:SetBedPos(Vector3i(mainSpawn:GetSpawnX(), mainSpawn:GetSpawnY(), mainSpawn:GetSpawnZ()), mainSpawn)
 
-			local sql = "SELECT player_uuid FROM residents WHERE town_id = ?";
+			local sql = "SELECT player_uuid FROM town_residents WHERE town_id = ?";
 			local parameter = {townId};
 			local playersLeft = ExecuteStatement(sql, parameter);
 
@@ -415,60 +423,84 @@ function TownList(Split, Player)
 	return true;
 end
 
+TownRanks = {
+	["resident"] = 1,
+	["assistant"] = 2,
+	["mayor"] = 3,
+}
 function TownRank(Split, Player)
 	local UUID = Player:GetUUID();
 
-	local sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
-	local parameter = {UUID};
-	local townId = ExecuteStatement(sql, parameter)[1][1];
+	local town = {
+		GetPlayerTown(UUID),
+		GetPlayerTownRank(UUID)
+	};
 
-	if not(townId) then
+	if not (town[1]) then
 		Player:SendMessageFailure("You are not part of a town!");
+	elseif not (town[2] == 'mayor') and not (town[2] == 'assistant') then
+		Player:SendMessageFailure("You have to be a mayor or assistant to do rank related tasks");
 	else
-		local ranks = Set{"assistent"};
-
 		if not (Split[3]) then
-			Player:SendMessageFailure("This command requires an extra parameter! Usage: /town rank (list/add/remove) {rank} {playername}");
+			Player:SendMessageFailure("This command requires an extra parameter! Usage: /town rank (list/add/remove) {playername} {rank}");
 		elseif (Split[3] == "list") then
 			for key, value in pairs(ranks) do
 				Player:SendMessageInfo(key);
 			end
 		elseif (Split[3] == "add" or Split[3] == "remove") then
 			if not (Split[4]) then
+				Player:SendMessageFailure("Please specify a player!");
+			elseif not (Split[5]) then
 				Player:SendMessageFailure("Please specify a rank!");
+			elseif not (TownRanks[Split[5]]) then --Check if the specified rank actually exists
+				Player:SendMessageFailure("The rank you specified doesn't exist!");
+			elseif (Split[5] == 'resident') then
+				Player:SendMessageFailure("You can not assign or remove a resident rank")
 			else
-				if not (ranks[Split[4]]) then --Check if the specified rank actually exists
-					Player:SendMessageFailure("The rank you specified doesn't exist!");
+				local UUID_target = cMojangAPI:GetUUIDFromPlayerName(Split[4], true);
+
+				if (UUID_target == UUID) then --Check if the player didn't specify him/herself
+					Player:SendMessageFailure("You can not change your own rank");
+				elseif (UUID_target == "") then --Check if the player actually exists
+					Player:SendMessageFailure("That player doesn't exist");
 				else
-					if not (Split[5]) then
-						Player:SendMessageFailure("Please specify a player!");
+					local sql = "SELECT town_id, town_rank FROM town_residents WHERE player_uuid = ?";
+					local parameter = {UUID_target};
+					local town_target = ExecuteStatement(sql, parameter);
+
+					if not (town_target[1]) or not (town_target[1][1] == town[1]) then --Check if the specified player is actually part of the command invokers town
+						Player:SendMessageFailure("That player is not part of your town!");
 					else
-						local UUID_target = cMojangAPI:GetUUIDFromPlayerName(Split[5], true);
-
-						if (UUID_target == UUID) then --Check if the player didn't specify him/herself
-							Player:SendMessageFailure("You can not change your own rank");
-						elseif (UUID_target == "") then --Check if the player actually exists
-							Player:SendMessageFailure("The specified player doesn't exist");
+						if (town[2] == 'assistant') and ((Split[5] == 'mayor') or (Split[5] == 'assistant')) then
+							Player:SendMessageFailure("You are not high enough ranked to change this rank of others");
+						elseif (town[2] == 'mayor') and (Split[5] == 'mayor') then
+							Player:SendMessageFailure("There can only be one mayor");
 						else
-							local sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
-							local parameter = {UUID_target};
-							local townId_target = ExecuteStatement(sql, parameter)[1][1];
+							local hasRank_target = false;
+							for key, value in pairs(town_target) do
+								if (value[2] == Split[5]) then
+									hasRank_target = true;
+								end
+							end
 
-							if not (townId_target == townId) then --Check if the specified player is actually part of the command invokers town
-								Player:SendMessageFailure("The specified player is not part of your town!");
-							else
-								if (Split[3] == "add") then
-									local sql = "UPDATE residents SET town_rank = ? WHERE player_uuid = ?";
-									local parameters = {Split[4], player_uuid};
+							if (Split[3] == "add") then
+								if (hasRank_target == true) then
+									Player:SendMessageFailure("That player already has this rank!");
+								else
+									local sql = "INSERT INTO town_residents (player_uuid, town_id, town_rank) VALUES (?, ?, ?)";
+									local parameters = {UUID_target, town[1], Split[5]};
 									ExecuteStatement(sql, parameters);
 
 									Player:SendMessageSuccess("Rank granted to the player!");
-								else
-									local sql = "UPDATE residents SET town_rank = NULL WHERE player_uuid = ?";
-									local parameter = {UUID_target};
+								end
+							else
+								if (hasRank_target == true) then
+									local sql = "DELETE FROM town_residents WHERE player_uuid = ? AND town_rank = ?";
+									local parameter = {UUID_target, Split[5]};
 									ExecuteStatement(sql, parameter);
-
 									Player:SendMessageSuccess("Rank removed from the player!");
+								else
+									Player:SendMessageFailure("That player doesn't have this rank");
 								end
 							end
 						end
@@ -486,72 +518,69 @@ end
 function TownToggleExplosions(Split, Player)
 	local UUID = Player:GetUUID();
 
-	if not (InTown[Player:GetUUID()]) then
-		Player:SendMessageFailure("You can't toggle if you're not inside your town!");
+	local town = {
+		GetPlayerTown(UUID),
+		GetPlayerTownRank(UUID);
+	};
+
+	if not (town[1]) then
+		Player:SendMessageFailure("You have to be part of a town to toggle explosions");
+	elseif not (TownRanks[town[2]] >= TownRanks['assistant']) then
+		Player:SendMessageFailure("You have to be higher ranked to toggle explosions");
 	else
-		local townId = GetPlayerTown(UUID);
+		local sql = "SELECT town_explosions_enabled FROM towns WHERE town_id = ?";
+		local parameter = {town[1]};
+		town[3] = ExecuteStatement(sql, parameter)[1][1];
 
-		local sql = "SELECT town_owner, town_explosions_enabled FROM towns WHERE town_id = ?";
-		local parameter = {townId};
-		local town = ExecuteStatement(sql, parameter)[1];
+		local sql = "UPDATE towns SET town_explosions_enabled = ? WHERE town_id = ?";
+		local parameter;
 
-		if not (town) then
-			Player:SendMessageFailure("You can't toggle if you're not part of this town!");
-		elseif not (town[1] == UUID) then
-			Player:SendMessageFailure("You can't toggle if you're not the owner of this town!");
+		if (town[3] == 0) then
+			parameter = {1, town[1]};
+
+			Player:SendMessageSuccess("Explosions enabled");
 		else
-			local sql = "UPDATE towns SET town_explosions_enabled = ? WHERE town_id = ?";
-			local parameter;
+			parameter = {0, town[1]};
 
-			if (town[2] == 0) then
-				parameter = {1, townId};
-
-				Player:SendMessageSuccess("Explosions enabled");
-			else
-				parameter = {0, townId};
-
-				Player:SendMessageSuccess("Explosions disabled");
-			end
-
-			ExecuteStatement(sql, parameter);
+			Player:SendMessageSuccess("Explosions disabled");
 		end
-	end
 
+		ExecuteStatement(sql, parameter);
+	end
 	return true;
 end
 
 function TownTogglePVP(Split, Player)
 	local UUID = Player:GetUUID();
 
-	if not (InTown[Player:GetUUID()]) then
-		Player:SendMessageFailure("You can't toggle if you're not inside your town!");
+	local town = {
+		GetPlayerTown(UUID),
+		GetPlayerTownRank(UUID);
+	};
+
+	if not (town[1]) then
+		Player:SendMessageFailure("You have to be part of a town to toggle pvp");
+	elseif not (TownRanks[town[2]] >= TownRanks['assistant']) then
+		Player:SendMessageFailure("You have to be higher ranked to toggle pvp");
 	else
-		local townId = GetPlayerTown(UUID);
+		local sql = "SELECT town_pvp_enabled FROM towns WHERE town_id = ?";
+		local parameter = {town[1]};
+		town[3] = ExecuteStatement(sql, parameter)[1][1];
 
-		local sql = "SELECT town_owner, town_pvp_enabled FROM towns WHERE town_id = ?";
-		local parameter = {townId};
-		local town = ExecuteStatement(sql, parameter)[1];
+		local sql = "UPDATE towns SET town_pvp_enabled = ? WHERE town_id = ?";
+		local parameter;
 
-		if not (town) then
-			Player:SendMessageFailure("You can't toggle if you're not part of this town!");
-		elseif not (town[1] == UUID) then
-			Player:SendMessageFailure("You can't toggle if you're not the owner of this town!");
+		if (town[3] == 0) then
+			parameter = {1, town[1]};
+
+			Player:SendMessageSuccess("PVP enabled");
 		else
-			local sql = "UPDATE towns SET town_pvp_enabled = ? WHERE town_id = ?";
-			local parameter;
+			parameter = {0, town[1]};
 
-			if (town[2] == 0) then
-				parameter = {1, townId};
-
-				Player:SendMessageSuccess("PVP enabled");
-			else
-				parameter = {0, townId};
-
-				Player:SendMessageSuccess("PVP disabled");
-			end
-
-			ExecuteStatement(sql, parameter);
+			Player:SendMessageSuccess("PVP disabled");
 		end
+
+		ExecuteStatement(sql, parameter);
 	end
 
 	return true;
@@ -560,35 +589,35 @@ end
 function TownToggleMobs(Split, Player)
 	local UUID = Player:GetUUID();
 
-	if not (InTown[Player:GetUUID()]) then
-		Player:SendMessageFailure("You can't toggle if you're not inside your town!");
+	local town = {
+		GetPlayerTown(UUID),
+		GetPlayerTownRank(UUID);
+	};
+
+	if not (town[1]) then
+		Player:SendMessageFailure("You have to be part of a town to toggle pvp");
+	elseif not (TownRanks[town[2]] >= TownRanks['assistant']) then
+		Player:SendMessageFailure("You have to be higher ranked to toggle pvp");
 	else
-		local townId = GetPlayerTown(UUID);
 
-		local sql = "SELECT town_owner, town_mobs_enabled FROM towns WHERE town_id = ?";
-		local parameter = {townId};
-		local town = ExecuteStatement(sql, parameter)[1];
+		local sql = "SELECT town_mobs_enabled FROM towns WHERE town_id = ?";
+		local parameter = {town[1]};
+		town[3] = ExecuteStatement(sql, parameter)[1][1];
 
-		if not (town) then
-			Player:SendMessageFailure("You can't toggle if you're not part of this town!");
-		elseif not (town[1] == UUID) then
-			Player:SendMessageFailure("You can't toggle if you're not the owner of this town!");
+		local sql = "UPDATE towns SET town_mobs_enabled = ? WHERE town_id = ?";
+		local parameter;
+
+		if (town[3] == 0) then
+			parameter = {1, town[1]};
+
+			Player:SendMessageSuccess("Mob spawning enabled");
 		else
-			local sql = "UPDATE towns SET town_mobs_enabled = ? WHERE town_id = ?";
-			local parameter;
+			parameter = {0, town[1]};
 
-			if (town[2] == 0) then
-				parameter = {1, townId};
-
-				Player:SendMessageSuccess("Mob spawning enabled");
-			else
-				parameter = {0, townId};
-
-				Player:SendMessageSuccess("Mob spawning disabled");
-			end
-
-			ExecuteStatement(sql, parameter);
+			Player:SendMessageSuccess("Mob spawning disabled");
 		end
+
+		ExecuteStatement(sql, parameter);
 	end
 
 	return true;
@@ -657,16 +686,17 @@ function TownSpawnSet(Split, Player)
 	else
 		local UUID = Player:GetUUID();
 
-		local sql = "SELECT towns.town_id, towns.town_owner FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
-		local parameter = {UUID};
-		local town = ExecuteStatement(sql, parameter)[1];
+		local town = {
+			GetPlayerTown(UUID),
+			GetPlayerTownRank(UUID);
+		};
 
-		if not (town) then
+		if not (town[1]) then
 			Player:SendMessageFailure("You have to be part of a town to set it's spawn");
-		elseif not (town[2] == UUID) then
-			Player:SendMessageFailure("You have to be the mayor of your town to set it's spawn");
+		elseif not (TownRanks[town[2]] >= TownRanks['assistant']) then
+			Player:SendMessageFailure("You have to be higher ranked to set a new town spawn");
 		else
-			local sql = "SELECT player_uuid FROM residents WHERE town_id = ?";
+			local sql = "SELECT player_uuid FROM town_residents WHERE town_id = ?";
 			local parameter = {town[1]};
 			local townMembers = ExecuteStatement(sql, parameter);
 

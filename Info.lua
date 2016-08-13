@@ -25,7 +25,7 @@ g_PluginInfo =
 				},
 				reloadconfig =
 				{
-					Handler = LoadConfig,
+					Handler = LoadGeneralConfig,
 					HelpString = "Reloads the Townvalds configuration file",
 					Permission = "townvalds.reload-config",
 				}

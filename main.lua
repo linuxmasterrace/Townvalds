@@ -12,10 +12,8 @@ function Initialize(Plugin)
 	RegisterPluginInfoCommands();
 	RegisterPluginInfoConsoleCommands();
 
-	ini = cIniFile();
-
 	--Create a new config if this is the first load, otherwise load the existing config file
-	LoadConfig();
+	LoadGeneralConfig();
 
 	LOG("[" .. PLUGIN:GetName() .. "] Enabling hooks");
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_JOINED, OnPlayerJoined);

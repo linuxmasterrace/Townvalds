@@ -1,7 +1,7 @@
 function PlotClaim(Split, Player)
 	local UUID = Player:GetUUID();
 
-	local sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
+	local sql = "SELECT town_id FROM town_residents WHERE player_uuid = ?";
 	local parameter = {UUID};
 	local resident = ExecuteStatement(sql, parameter)[1];
 
@@ -37,7 +37,7 @@ end
 function PlotUnclaim(Split, Player)
 	local UUID = Player:GetUUID();
 
-	local sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
+	local sql = "SELECT town_id FROM town_residents WHERE player_uuid = ?";
 	local parameter = {UUID};
 	local resident = ExecuteStatement(sql, parameter)[1];
 
@@ -66,7 +66,7 @@ end
 function PlotToggleMobs(Split, Player)
 	local UUID = Player:GetUUID();
 
-	local sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
+	local sql = "SELECT town_id FROM town_residents WHERE player_uuid = ?";
 	local parameter = {UUID};
 	local town_id = ExecuteStatement(sql, parameter)[1][1];
 

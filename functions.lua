@@ -3,12 +3,13 @@ InTown = {}
 function CheckPlayerInTown(Player, chunkX, chunkZ)
     local sql = "SELECT towns.town_name, townChunks.chunkX, townChunks.chunkZ, townChunks.world FROM townChunks LEFT JOIN towns ON towns.town_id = townChunks.town_id WHERE townChunks.chunkX = ? AND townChunks.chunkZ = ? AND townChunks.world = ?";
     local parameters = {chunkX, chunkZ, Player:GetWorld():GetName()};
-    local result = ExecuteStatement(sql, parameters);
+    local result = ExecuteStatement(sql, parameters)[1];
     local town = InTown[Player:GetUUID()];
-    if(result[1] and result[1][1] and result[1][1] ~= town) then
-        Player:SendMessage("You're in the town " .. result[1][1]);
-        InTown[Player:GetUUID()] = result[1][1];
-    elseif (not(result[1] and result[1][1]) and town) then
+
+    if (result) and (not (town) or not (town == result[1])) then
+        Player:SendMessage("You're in the town " .. result[1]);
+        InTown[Player:GetUUID()] = result[1];
+    elseif not (result) and (town) then
         Player:SendMessage("You have left the town "..town..".");
         InTown[Player:GetUUID()] = nil;
     end
@@ -17,12 +18,12 @@ end
 function CheckBlockPermission(Player, BlockX, BlockZ)
     local sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?";
     local parameters = {math.floor(BlockX / 16), math.floor(BlockZ / 16), Player:GetWorld():GetName()};
-    local town_id = ExecuteStatement(sql, parameters);
-    if (town_id[1] and town_id[1][1]) then --The block being broken is part of a town
-        local sql = "SELECT * FROM residents WHERE player_uuid = ? AND town_id = ?";
-        local parameters = {Player:GetUUID(), town_id[1][1]};
-        local result = ExecuteStatement(sql, parameters);
-        if (result[1] and result[1][1]) then -- Player is in a town he belongs to
+    local townId = ExecuteStatement(sql, parameters)[1];
+    if (townId) then --The block being broken is part of a town
+        local sql = "SELECT town_id FROM town_residents WHERE player_uuid = ? AND town_id = ?";
+        local parameters = {Player:GetUUID(), townId[1]};
+        local result = ExecuteStatement(sql, parameters)[1];
+        if (result) then -- Player is in a town he belongs to
             return false;
         else -- Player is in a town he doesn't belong to, prevent block breaking
             return true;
@@ -33,7 +34,7 @@ function CheckBlockPermission(Player, BlockX, BlockZ)
 end
 
 function GetPlayerTown(UUID)
-    local sql = "SELECT town_id FROM residents WHERE player_uuid = ?";
+    local sql = "SELECT town_id FROM town_residents WHERE player_uuid = ?";
     local parameter = {UUID};
     local townId = ExecuteStatement(sql, parameter)[1];
 
@@ -42,6 +43,25 @@ function GetPlayerTown(UUID)
     else
         return nil;
     end
+end
+
+function GetPlayerTownRank(UUID)
+	local sql = "SELECT town_rank FROM town_residents WHERE player_uuid = ?";
+	local parameter = {UUID};
+	local townRankList = ExecuteStatement(sql, parameter);
+
+	if not (townRankList) then
+		return nil;
+	else
+		local rank = nil;
+		for key, value in pairs(townRankList) do
+			if (rank == nil) or (TownRanks[value[1]] > TownRanks[rank]) then
+				rank = value[1];
+			end
+		end
+
+		return rank;
+	end
 end
 
 function GetTownName(townId)
