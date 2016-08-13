@@ -1,6 +1,7 @@
 config = {};
 
-function LoadConfig()
+function LoadGeneralConfig()
+	local ini = cIniFile();
 	local newconfig = {};
 	ini:ReadFile(PLUGIN:GetLocalFolder() .. "/config.ini");
 	ini:DeleteHeaderComments();

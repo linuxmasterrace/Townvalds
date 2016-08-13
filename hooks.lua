@@ -1,6 +1,6 @@
 function OnPlayerJoined(Player) -- This is called after connection
 	local UUID = Player:GetUUID();
-    local sql = "INSERT OR IGNORE INTO residents (player_uuid, player_name, town_id, town_rank, first_joined) VALUES (?, ?, NULL, NULL, datetime(\"now\"))";
+    local sql = "INSERT OR IGNORE INTO residents (player_uuid, player_name, first_joined) VALUES (?, ?, datetime(\"now\"))";
     local parameters = {UUID, Player:GetName()};
     if(ExecuteStatement(sql, parameters) == nil) then
         LOG("Couldn't add player "..Player:GetName().." to the database!!!");
@@ -12,7 +12,7 @@ function OnPlayerJoined(Player) -- This is called after connection
 	Channel[UUID] = "global";
 
 	--Make sure if the town of the player has a new spawn since last join, to set the new spawn
-	local sql = "SELECT towns.town_spawnX, towns.town_spawnY, towns.town_spawnZ, towns.town_spawnWorld FROM towns INNER JOIN residents ON towns.town_id = residents.town_id WHERE residents.player_uuid = ?";
+	local sql = "SELECT towns.town_spawnX, towns.town_spawnY, towns.town_spawnZ, towns.town_spawnWorld FROM towns INNER JOIN town_residents ON towns.town_id = town_residents.town_id WHERE town_residents.player_uuid = ?";
 	local parameter = {UUID};
 	local townSpawn = ExecuteStatement(sql, parameter)[1];
 
