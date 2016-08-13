@@ -6,7 +6,7 @@ function OnChat(Player, Message)
 
 		--If the player is in the specified channel, send it to the players having that channel active
 		if(Channel[UUID] == "nation") then --Nation channel
-			local sql = "SELECT town_residents.player_uuid FROM town_residents INNER JOIN towns ON town_residents.town_id = towns.town_id WHERE towns.nation_id = (SELECT nations.nation_id FROM nations INNER JOIN towns ON nations.nation_id = towns.nation_id INNER JOIN town_residents ON towns.town_id = town_residents.town_id WHERE town_residents.player_uuid = ?)";
+			local sql = "SELECT DISTINCT town_residents.player_uuid FROM town_residents INNER JOIN towns ON town_residents.town_id = towns.town_id WHERE towns.nation_id = (SELECT nations.nation_id FROM nations INNER JOIN towns ON nations.nation_id = towns.nation_id INNER JOIN town_residents ON towns.town_id = town_residents.town_id WHERE town_residents.player_uuid = ?)";
 			local parameter = {UUID};
 			local players = ExecuteStatement(sql, parameter);
 
@@ -18,7 +18,7 @@ function OnChat(Player, Message)
 				);
 			end
 		elseif(Channel[UUID] == "town") then --Town channel
-			local sql = "SELECT player_uuid FROM town_residents WHERE town_id = (SELECT town_id FROM town_residents WHERE player_uuid = ?)";
+			local sql = "SELECT DISTINCT player_uuid FROM town_residents WHERE town_id = (SELECT town_id FROM town_residents WHERE player_uuid = ? LIMIT 1)";
 			local parameter = {UUID};
 			local players = ExecuteStatement(sql, parameter);
 
@@ -97,7 +97,7 @@ function switchNation(Player, UUID)
 	if (Channel[UUID] == "nation") then
 		Player:SendMessageFailure("You are already in this channel");
 	else
-		local sql = "SELECT nations.nation_id FROM nations INNER JOIN towns ON nations.nation_id = towns.nation_id INNER JOIN town_residents ON towns.town_id = town_residents.town_id WHERE town_residents.player_uuid = ?";
+		local sql = "SELECT DISTINCT nations.nation_id FROM nations INNER JOIN towns ON nations.nation_id = towns.nation_id INNER JOIN town_residents ON towns.town_id = town_residents.town_id WHERE town_residents.player_uuid = ?";
 		local parameter = {UUID};
 		local nation = ExecuteStatement(sql, parameter)[1];
 
@@ -114,7 +114,7 @@ function switchTown(Player, UUID)
 	if (Channel[UUID] == "town") then
 		Player:SendMessageFailure("You are already in this channel");
 	else
-		sql = "SELECT town_id FROM town_residents WHERE player_uuid = ?";
+		sql = "SELECT DISTINCT town_id FROM town_residents WHERE player_uuid = ?";
 		parameter = {UUID};
 		local town_id = ExecuteStatement(sql, parameter)[1][1];
 

@@ -6,7 +6,7 @@ function CheckPlayerInTown(Player, chunkX, chunkZ)
     local result = ExecuteStatement(sql, parameters)[1];
     local town = InTown[Player:GetUUID()];
 
-    if (result) and not (town) then
+    if (result) and (not (town) or not (town == result[1])) then
         Player:SendMessage("You're in the town " .. result[1]);
         InTown[Player:GetUUID()] = result[1];
     elseif not (result) and (town) then
@@ -24,7 +24,6 @@ function CheckBlockPermission(Player, BlockX, BlockZ)
         local parameters = {Player:GetUUID(), townId[1]};
         local result = ExecuteStatement(sql, parameters)[1];
         if (result) then -- Player is in a town he belongs to
-			LOG("test");
             return false;
         else -- Player is in a town he doesn't belong to, prevent block breaking
             return true;
@@ -38,7 +37,7 @@ function GetPlayerTown(UUID)
     local sql = "SELECT town_id FROM town_residents WHERE player_uuid = ?";
     local parameter = {UUID};
     local townId = ExecuteStatement(sql, parameter)[1];
-	
+
     if (townId) then
         return townId[1];
     else
