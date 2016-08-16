@@ -195,6 +195,12 @@ g_PluginInfo =
 					HelpString = "Lists towns",
 					Permission = "townvalds.town.list",
 				},
+				online =
+				{
+					Handler = TownOnline,
+					HelpString = "Lists players online in the town",
+					Permission = "townvalds.town.online",
+				},
 				rank =
 				{
 					Handler = TownRank,
@@ -404,6 +410,11 @@ g_PluginInfo =
 		["townvalds.town.spawn.set"] =
 		{
 			Description = "Allows the player to set the town spawn. This is used together with the 'enable_town_spawns' config option",
+			RecommendedGroups = "default",
+		},
+		["townvalds.town.online"] =
+		{
+			Description = "Allows the player to see a list of online town members",
 			RecommendedGroups = "default",
 		},
 		["townvalds.plot.claim"] =
