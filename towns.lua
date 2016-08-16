@@ -449,6 +449,41 @@ function TownList(Split, Player)
 	return true;
 end
 
+function TownOnline(Split, Player)
+	local UUID = Player:GetUUID();
+
+	local town = {
+		GetPlayerTown(UUID)
+	};
+
+	if not (town[1]) then
+		Player:SendMessageFailure("You are not part of a town!");
+	else
+		local sql = "SELECT DISTINCT player_uuid FROM town_residents WHERE town_id = ?";
+		local parameter = {town[1]};
+		local player_targets = ExecuteStatement(sql, parameter);
+
+		Player:SendMessageInfo("[ Online players ]");
+
+		for key, value in pairs(player_targets) do
+			cRoot:Get():DoWithPlayerByUUID(value[1],
+			function (cPlayer)
+				local player_target = {cPlayer:GetUUID()};
+				if not (player_target[1] == UUID) then
+					local sql = "SELECT player_name FROM residents WHERE player_uuid = ?";
+					local parameter = {cPlayer:GetUUID()};
+					player_target[2] = ExecuteStatement(sql, parameter)[1][1]; --We know this will always return a result so don't check it
+					player_target[3] = GetPlayerTownRank(player_target[1]);
+					Player:SendMessageInfo(player_target[2] .. " - " .. player_target[3]);
+				end
+			end
+			);
+		end
+	end
+
+	return true;
+end
+
 TownRanks = {
 	["resident"] = 1,
 	["assistant"] = 2,
