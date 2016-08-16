@@ -162,18 +162,44 @@ function TownUnclaim(Split, Player)
 	elseif not (TownRanks[town[2]] >= TownRanks['assistant']) then
 		Player:SendMessageFailure("You have to be higher ranked to unclaim land");
 	else
-		local sql = "SELECT COUNT(*) FROM townChunks WHERE town_id = ?";
-		local parameter = {town[1]};
-		local chunkCount = ExecuteStatement(sql, parameter)[1][1];
+		local sql = "SELECT townChunk_id, town_id FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ? AND world = ?";
+		local parameters = {town[1], Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
+		local plot = ExecuteStatement(sql, parameters)[1];
 
-		if (chunkCount == 1) then
-			Player:SendMessageFailure("Since this is the last chunk of this town, you can't remove it!");
+		if not (plot[2] == town[1]) then
+			Player:SendMessageFailure("This plot doesn't belong to your town");
 		else
-			local sql = "DELETE FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ? AND world = ?";
-			local parameters = {town[1], Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
-			ExecuteStatement(sql, parameters);
+			local sql = "SELECT COUNT(*) FROM townChunks WHERE town_id = ?";
+			local parameter = {town[1]};
+			local chunkCount = ExecuteStatement(sql, parameter)[1][1];
 
-			Player:SendMessageSuccess("Land succesfully unclaimed.");
+			if (chunkCount == 1) then
+				Player:SendMessageFailure("Since this is the last chunk of this town, you can't remove it!");
+			else
+				local sql = "SELECT townChunk_id, chunkX, chunkZ, world FROM townChunks WHERE town_id = ? AND (chunkX = ? + 1 OR chunkX = ? OR chunkX = ? - 1) AND (chunkZ = ? + 1 OR chunkZ = ? OR chunkZ = ? - 1) AND world = ? AND townChunk_id <> ?";
+				local parameters = {town[1], Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkZ(), Player:GetChunkZ(), Player:GetChunkZ(), Player:GetWorld():GetName(), plot[1]};
+				local plots = ExecuteStatement(sql, parameters);
+
+				local allowed = true;
+				for key, value in pairs(plots) do
+					local parameters = {town[1], value[2], value[2], value[2], value[3], value[3], value[3], value[4], value[1]};
+					local plots_target = ExecuteStatement(sql, parameters); --Use the previous query, we need to let it get the same type of results for this plot
+
+					if not (plots_target[2]) then --This chunk would be seperated from the town if the one next to it is unclaimed
+						allowed = false;
+						break;
+					end
+				end
+
+				if not (allowed) then
+					Player:SendMessageFailure("Unclaiming this chunk would cause a chunk to be disconnected from the town, this is not allowed");
+				else
+					local sql = "DELETE FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ? AND world = ?";
+					local parameters = {town[1], Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
+					--ExecuteStatement(sql, parameters);
+					Player:SendMessageSuccess("Land succesfully unclaimed.");
+				end
+			end
 		end
 	end
 

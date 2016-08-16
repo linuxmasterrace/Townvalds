@@ -2,7 +2,8 @@ g_PluginInfo =
 {
 	Name = "Townvalds",
 	Date = "2015-11-18",
-	Description = "An opensource town plugin, based on Towny (for Bukkit).",
+	SourceLocation = "https://github.com/linuxmasterrace/townvalds",
+	Description = "[[An open-source town plugin, based on Towny (for Bukkit)]]",
 
 	AdditionalInfo =
 	{
