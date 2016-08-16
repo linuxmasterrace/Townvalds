@@ -471,7 +471,7 @@ function TownOnline(Split, Player)
 				local player_target = {cPlayer:GetUUID()};
 				if not (player_target[1] == UUID) then
 					local sql = "SELECT player_name FROM residents WHERE player_uuid = ?";
-					local parameter = {cPlayer:GetUUID()};
+					local parameter = {player_target[1]};
 					player_target[2] = ExecuteStatement(sql, parameter)[1][1]; --We know this will always return a result so don't check it
 					player_target[3] = GetPlayerTownRank(player_target[1]);
 					Player:SendMessageInfo(player_target[2] .. " - " .. player_target[3]);
