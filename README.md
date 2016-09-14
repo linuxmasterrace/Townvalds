@@ -73,4 +73,4 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
 
-We also make use of the "lua-bit-numberlua" library, available [here](https://github.com/davidm/lua-bit-numberlua), which has is licensed under it's own license.
+We also make use of the "lua-bit-numberlua" library, available [here](https://github.com/davidm/lua-bit-numberlua), which is licensed under it's own license.
