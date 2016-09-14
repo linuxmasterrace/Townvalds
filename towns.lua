@@ -196,7 +196,7 @@ function TownUnclaim(Split, Player)
 				else
 					local sql = "DELETE FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ? AND world = ?";
 					local parameters = {town[1], Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
-					ExecuteStatement(sql, parameters);
+					--ExecuteStatement(sql, parameters);
 					Player:SendMessageSuccess("Land succesfully unclaimed.");
 				end
 			end
