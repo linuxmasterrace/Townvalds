@@ -149,9 +149,7 @@ function OnPlayerUsingItem(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, C
 		LookVector:Normalize(); --Make the vector 1m long
 		local Start = EyePos + LookVector;
 		local End = EyePos + LookVector * 50;
-		local test = cLineBlockTracer.Trace(Player:GetWorld(), CallBacks, Start.x, Start.y, Start.z, End.x, End.y, End.z);
-
-		return test;
+		return cLineBlockTracer.Trace(Player:GetWorld(), CallBacks, Start.x, Start.y, Start.z, End.x, End.y, End.z);
 	end
 end
 
