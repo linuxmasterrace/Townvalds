@@ -15,31 +15,25 @@ function CheckPlayerInTown(Player, chunkX, chunkZ)
     end
 end
 
-function CheckBlockPermission(Player, BlockX, BlockZ)
-    local sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?";
-    local parameters = {math.floor(BlockX / 16), math.floor(BlockZ / 16), Player:GetWorld():GetName()};
-    local townId = ExecuteStatement(sql, parameters)[1];
-    if (townId) then --The block being broken is part of a town
-        local sql = "SELECT town_id FROM town_residents WHERE player_uuid = ? AND town_id = ?";
-        local parameters = {Player:GetUUID(), townId[1]};
-        local result = ExecuteStatement(sql, parameters)[1];
-        if (result) then -- Player is in a town he belongs to
-            return false;
-        else -- Player is in a town he doesn't belong to, prevent block breaking
-            return true;
-        end
-    else -- The block being broken is NOT part of a town
-        return false;
-    end
+function GetPlayerNation(UUID)
+	local sql = "SELECT towns.nation_id FROM town_residents INNER JOIN towns ON town_residents.town_id = towns.town_id WHERE town_residents.player_uuid = ?";
+	local parameter = {UUID};
+	local nation = ExecuteStatement(sql, parameter)[1];
+
+	if (nation) then
+		return nation[1];
+	else
+		return nil;
+	end
 end
 
 function GetPlayerTown(UUID)
     local sql = "SELECT town_id FROM town_residents WHERE player_uuid = ?";
     local parameter = {UUID};
-    local townId = ExecuteStatement(sql, parameter)[1];
+    local town = ExecuteStatement(sql, parameter)[1];
 
-    if (townId) then
-        return townId[1];
+    if (town) then
+        return town[1];
     else
         return nil;
     end
@@ -137,6 +131,14 @@ function DisplayVersion(Split, Player)
     end
 
     return true;
+end
+
+function CheckPermission(permissions, permissionToCheck)
+	if (bit32.band(permissions, permissionToCheck) == 0) then
+		return false; --Not allowed
+	else
+		return true; --Allowed
+	end
 end
 
 function Set(list)

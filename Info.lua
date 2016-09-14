@@ -3,7 +3,7 @@ g_PluginInfo =
 	Name = "Townvalds",
 	Date = "2015-11-18",
 	SourceLocation = "https://github.com/linuxmasterrace/townvalds",
-	Description = "[[An open-source town plugin, based on Towny (for Bukkit)]]",
+	Description = "An open-source town plugin, based on Towny (for Bukkit)",
 
 	AdditionalInfo =
 	{
@@ -185,7 +185,13 @@ g_PluginInfo =
 						{
 							Handler = TownSpawnSet,
 							HelpString = "Sets the town spawn at the current position",
-							Permission = "townvalds.town.spawn.set"
+							Permission = "townvalds.town.set.spawn"
+						},
+						perm =
+						{
+							Handler = TownPermSet,
+							HelpString = "Set permissions such as building, item use, switches, etc",
+							Permission = "townvalds.town.set.perms"
 						},
 					}
 				},
@@ -407,9 +413,14 @@ g_PluginInfo =
 			Description = "Allows the player to always teleport to any town",
 			RecommendedGroups = "admins",
 		},
-		["townvalds.town.spawn.set"] =
+		["townvalds.town.set.spawn"] =
 		{
 			Description = "Allows the player to set the town spawn. This is used together with the 'enable_town_spawns' config option",
+			RecommendedGroups = "default",
+		},
+		["townvalds.town.set.perms"] =
+		{
+			Description = "Allows the player to change permissions such as building, item use, switches, etc",
 			RecommendedGroups = "default",
 		},
 		["townvalds.town.online"] =
