@@ -52,24 +52,12 @@ function OnPlayerBreakingBlock(Player, BlockX, BlockY, BlockZ, BlockFace, BlockT
 		return true;
 	else
 		if (town[1] == GetPlayerTown(Player:GetUUID())) then
-			if (CheckPermission(town[3], RESIDENTDESTROY) == false) then
-				return true; --Prevent
-			else
-				return false; --Allow
-			end
+			return not CheckPermission(town[3], RESIDENTDESTROY);
 		else
 			if (town[2] == GetPlayerNation(Player:GetUUID())) then
-				if (CheckPermission(town[3], ALLYDESTROY) == false) then
-					return true; --Prevent
-				else
-					return false; --Allow
-				end
+				return not CheckPermission(town[3], ALLYDESTROY);
 			else
-					if (CheckPermission(town[3], OUTSIDERDESTROY) == false) then
-					return true; --Prevent
-				else
-					return false; --Allow
-				end
+				return not CheckPermission(town[3], OUTSIDERDESTROY);
 			end
 		end
     end
@@ -83,24 +71,12 @@ function OnPlayerPlacingBlock(Player, BlockX, BlockY, BlockZ, BlockFace, BlockTy
 		return true;
 	else
 		if (town[1] == GetPlayerTown(Player:GetUUID())) then
-			if (CheckPermission(town[3], RESIDENTBUILD) == false) then
-				return true;  --Prevent
-			else
-				return false; --Allow
-			end
+			return not CheckPermission(town[3], RESIDENTBUILD);
 		else
 			if (town[2] == GetPlayerNation(Player:GetUUID())) then
-				if (CheckPermission(town[3], ALLYBUILD) == false) then
-					return true; --Prevent
-				else
-					return false; --Allow
-				end
+				return not CheckPermission(town[3], ALLYBUILD);
 			else
-				if (CheckPermission(town[3], OUTSIDERBUILD) == false) then
-					return true; --Prevent
-				else
-					return false; --Allow
-				end
+				return not CheckPermission(town[3], OUTSIDERBUILD);
 			end
 		end
     end
