@@ -85,7 +85,7 @@ end
 function OnPlayerUsingItem(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, CursorY, CursorZ, BlockType, BlockMeta)
 	local itemUsed = ItemToString(Player:GetEquippedItem());
 	--Since this hook is always called twice when using buckets, we need the 2nd call which has BlockFace at -1 parameters
-	if (BlockFace == -1) or (itemUsed == "lighter") then
+	if (BlockFace == -1) or (itemUsed == "lighter") or (itemUsed == "firecharge") then
 		local CallBacks = {
 			OnNextBlock = function(a_BlockX, a_BlockY, a_BlockZ, a_BlockType, a_BlockMeta) --The actual check if the item is allowed or not
 				local sql = "SELECT towns.town_id, towns.nation_id, towns.town_permissions, towns.town_fire_enabled FROM townChunks INNER JOIN towns ON townChunks.town_id = towns.town_id WHERE chunkX = ? AND chunkZ = ? AND world = ?";
@@ -105,7 +105,7 @@ function OnPlayerUsingItem(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, C
 					end
 
 					if (allowed == true) then
-						if (itemUsed == "lighter") then
+						if (itemUsed == "lighter") or (itemUsed == "firecharge") then
 							if (town[4] == 0) then --If fire is disabled in this town, prevent the player from starting a fire
 								return false; --Prevent item use
 							else
