@@ -782,3 +782,88 @@ function TownSpawnSet(Split, Player)
 
 	return true;
 end
+
+RESIDENTBUILD = 0x1;
+RESIDENTDESTROY = 0x2;
+RESIDENTSWITCH = 0x4;
+RESIDENTITEMUSE = 0x8;
+ALLYBUILD = 0x10;
+ALLYDESTROY = 0x20;
+ALLYSWITCH = 0x40;
+ALLYITEMUSE = 0x80;
+OUTSIDERBUILD = 0x100;
+OUTSIDERDESTROY = 0x200;
+OUTSIDERSWITCH = 0x400;
+OUTSIDERITEMUSE = 0x800;
+function TownPermSet(Split, Player)
+	local UUID = Player:GetUUID();
+
+	if not (Split[4] == 'resident') and not (Split[4] == 'ally') and not (Split[4] == 'outsider') then
+		Player:SendMessageFailure("You have to specify the level of permission you want to change");
+		Player:SendMessageFailure("Resident, ally or outsider");
+	elseif not (Split[5] == 'build') and not (Split[5] == 'destroy') and not (Split[5] == 'switch') and not (Split[5] == 'itemuse') then
+		Player:SendMessageFailure("You have to specify which permission you want to change");
+		Player:SendMessageFailure("Build, destroy, switch or itemuse");
+	elseif not (Split[6] == 'on') and not (Split[6] == 'off') then
+		Player:SendMessageFailure("You have to specify if you want to turn this permission on or off");
+	else
+		local sql = "SELECT towns.town_id, towns.nation_id, towns.town_permissions FROM towns INNER JOIN town_residents ON towns.town_id = town_residents.town_id WHERE town_residents.player_uuid = ?";
+		local parameter = {UUID};
+		local town = ExecuteStatement(sql, parameter)[1];
+
+		if not (town) then
+			Player:SendMessageFailure("You have to be in a town to change it's permissions");
+		else
+			if not (TownRanks[GetPlayerTownRank(UUID)] >= TownRanks['assistant']) then
+				Player:SendMessageFailure("You are not high enough ranked to change the town permissions");
+			else
+				local modifiedPermission;
+
+				if (Split[4] == 'resident') then
+					if (Split[5] == 'build') then
+						modifiedPermission = RESIDENTBUILD;
+					elseif (Split[5] == 'destroy') then
+						modifiedPermission = RESIDENTDESTROY;
+					elseif (Split[5] == 'switch') then
+						modifiedPermission = RESIDENTSWITCH;
+					else
+						modifiedPermission = RESIDENTITEMUSE;
+					end
+				elseif (Split[4] == 'ally') then
+					if (Split[5] == 'build') then
+						modifiedPermission = ALLYBUILD;
+					elseif (Split[5] == 'destroy') then
+						modifiedPermission = ALLYDESTROY;
+					elseif (Split[5] == 'switch') then
+						modifiedPermission = ALLYSWITCH;
+					else
+						modifiedPermission = ALLYITEMUSE;
+					end
+				else
+					if (Split[5] == 'build') then
+						modifiedPermission = OUTSIDERBUILD;
+					elseif (Split[5] == 'destroy') then
+						modifiedPermission = OUTSIDERDESTROY;
+					elseif (Split[5] == 'switch') then
+						modifiedPermission = OUTSIDERSWITCH;
+					else
+						modifiedPermission = OUTSIDERITEMUSE;
+					end
+				end
+
+				local newPermissions = town[3];
+
+				if (Split[6] == 'on') then
+					newPermissions = bit32.bor(newPermissions, modifiedPermission);
+				elseif (Split[6] == 'off') then
+					newPermissions = bit32.bxor(newPermissions, modifiedPermission);
+				end
+
+				local sql = "UPDATE towns SET town_permissions = ? WHERE town_id = ?";
+				local parameters = {newPermissions, town[1]};
+				ExecuteStatement(sql, parameters);
+			end
+		end
+	end
+	return true;
+end
