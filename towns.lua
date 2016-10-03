@@ -17,7 +17,7 @@ function TownCreate(Split, Player)
 		if (townName) then
 			Player:SendMessageFailure("There already exists a town with that name, please choose a different one");
 		else
-			local sql = "SELECT * FROM townChunks WHERE (chunkX > ? AND chunkX < ?) AND (chunkZ > ? AND chunkZ < ?)";
+			local sql = "SELECT * FROM plots WHERE (chunkX > ? AND chunkX < ?) AND (chunkZ > ? AND chunkZ < ?)";
 			local parameters = {Player:GetChunkX() - config.min_distance_from_other_towns - 1, Player:GetChunkX() + config.min_distance_from_other_towns + 1, Player:GetChunkZ() - config.min_distance_from_other_towns - 1, Player:GetChunkZ() + config.min_distance_from_other_towns + 1};
 			local remote_town = ExecuteStatement(sql, parameters);
 
@@ -28,7 +28,7 @@ function TownCreate(Split, Player)
 				local parameters = {Split[3], 0, 0, math.floor(Player:GetPosX()), math.floor(Player:GetPosY()), math.floor(Player:GetPosZ()), Player:GetWorld():GetName()};
 				local townId = ExecuteStatement(sql, parameters);
 
-				local sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ, world) VALUES (?, ?, ?, ?)";
+				local sql = "INSERT INTO plots (town_id, chunkX, chunkZ, world) VALUES (?, ?, ?, ?)";
 				local parameters = {townId, Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 				ExecuteStatement(sql, parameters);
 
@@ -129,14 +129,14 @@ function TownClaim(Split, Player)
 	elseif not (TownRanks[town[2]] >= TownRanks['assistant']) then
 		Player:SendMessageFailure("You have to be higher ranked to claim land");
 	else
-		local sql = "SELECT town_id FROM townChunks WHERE town_id = ? AND (chunkX = ? + 1 OR chunkX = ? OR chunkX = ? - 1) AND (chunkZ = ? + 1 OR chunkZ = ? OR chunkZ = ? - 1)";
+		local sql = "SELECT town_id FROM plots WHERE town_id = ? AND (chunkX = ? + 1 OR chunkX = ? OR chunkX = ? - 1) AND (chunkZ = ? + 1 OR chunkZ = ? OR chunkZ = ? - 1)";
 		local parameters = {town[1], Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkZ(), Player:GetChunkZ(), Player:GetChunkZ()};
 		local result = ExecuteStatement(sql, parameters)[1];
 
 		if not (result) then
 			Player:SendMessageFailure("You have to be next to your town to claim land!");
 		else -- The chunk to be claimed is next to an already existing chunk of the town
-			local sql = "INSERT INTO townChunks (town_id, chunkX, chunkZ, world) VALUES (?, ?, ?, ?)";
+			local sql = "INSERT INTO plots (town_id, chunkX, chunkZ, world) VALUES (?, ?, ?, ?)";
 			local parameters = {town[1], Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 			ExecuteStatement(sql, parameters);
 
@@ -162,21 +162,21 @@ function TownUnclaim(Split, Player)
 	elseif not (TownRanks[town[2]] >= TownRanks['assistant']) then
 		Player:SendMessageFailure("You have to be higher ranked to unclaim land");
 	else
-		local sql = "SELECT townChunk_id, town_id FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ? AND world = ?";
+		local sql = "SELECT townChunk_id, town_id FROM plots WHERE town_id = ? AND chunkX = ? AND chunkZ = ? AND world = ?";
 		local parameters = {town[1], Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 		local plot = ExecuteStatement(sql, parameters)[1];
 
 		if not (plot[2] == town[1]) then
 			Player:SendMessageFailure("This plot doesn't belong to your town");
 		else
-			local sql = "SELECT COUNT(*) FROM townChunks WHERE town_id = ?";
+			local sql = "SELECT COUNT(*) FROM plots WHERE town_id = ?";
 			local parameter = {town[1]};
 			local chunkCount = ExecuteStatement(sql, parameter)[1][1];
 
 			if (chunkCount == 1) then
 				Player:SendMessageFailure("Since this is the last chunk of this town, you can't remove it!");
 			else
-				local sql = "SELECT townChunk_id, chunkX, chunkZ, world FROM townChunks WHERE town_id = ? AND (chunkX = ? + 1 OR chunkX = ? OR chunkX = ? - 1) AND (chunkZ = ? + 1 OR chunkZ = ? OR chunkZ = ? - 1) AND world = ? AND townChunk_id <> ?";
+				local sql = "SELECT townChunk_id, chunkX, chunkZ, world FROM plots WHERE town_id = ? AND (chunkX = ? + 1 OR chunkX = ? OR chunkX = ? - 1) AND (chunkZ = ? + 1 OR chunkZ = ? OR chunkZ = ? - 1) AND world = ? AND townChunk_id <> ?";
 				local parameters = {town[1], Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkX(), Player:GetChunkZ(), Player:GetChunkZ(), Player:GetChunkZ(), Player:GetWorld():GetName(), plot[1]};
 				local plots = ExecuteStatement(sql, parameters);
 
@@ -194,7 +194,7 @@ function TownUnclaim(Split, Player)
 				if not (allowed) then
 					Player:SendMessageFailure("Unclaiming this chunk would cause a chunk to be disconnected from the town, this is not allowed");
 				else
-					local sql = "DELETE FROM townChunks WHERE town_id = ? AND chunkX = ? AND chunkZ = ? AND world = ?";
+					local sql = "DELETE FROM plots WHERE town_id = ? AND chunkX = ? AND chunkZ = ? AND world = ?";
 					local parameters = {town[1], Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 					ExecuteStatement(sql, parameters);
 					Player:SendMessageSuccess("Land succesfully unclaimed.");
@@ -406,7 +406,7 @@ function TownLeave(Split, Player)
 			local parameter = {UUID};
 			ExecuteStatement(sql, parameter);
 
-			local sql = "UPDATE townChunks SET owner = NULL WHERE owner = ?";
+			local sql = "UPDATE plots SET owner = NULL WHERE owner = ?";
 			local parameter = {UUID};
 			ExecuteStatement(sql, parameter);
 
