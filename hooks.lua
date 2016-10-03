@@ -45,7 +45,7 @@ function OnPlayerMoving(Player, OldPosition, NewPosition)
 end
 
 function OnPlayerBreakingBlock(Player, BlockX, BlockY, BlockZ, BlockFace, BlockType, BlockMeta)
-	local sql = "SELECT towns.town_id, towns.nation_id, towns.town_permissions FROM townChunks INNER JOIN towns ON townChunks.town_id = towns.town_id WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+	local sql = "SELECT towns.town_id, towns.nation_id, towns.town_permissions FROM plots INNER JOIN towns ON plots.town_id = towns.town_id WHERE chunkX = ? AND chunkZ = ? AND world = ?";
     local parameters = {math.floor(BlockX / 16), math.floor(BlockZ / 16), Player:GetWorld():GetName()};
     local town = ExecuteStatement(sql, parameters)[1];
     if not (town) then --The block being broken is not part of a town, so breaking is allowed
@@ -64,7 +64,7 @@ function OnPlayerBreakingBlock(Player, BlockX, BlockY, BlockZ, BlockFace, BlockT
 end
 
 function OnPlayerPlacingBlock(Player, BlockX, BlockY, BlockZ, BlockFace, BlockType, BlockMeta)
-	local sql = "SELECT towns.town_id, towns.nation_id, towns.town_permissions FROM townChunks INNER JOIN towns ON townChunks.town_id = towns.town_id WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+	local sql = "SELECT towns.town_id, towns.nation_id, towns.town_permissions FROM plots INNER JOIN towns ON plots.town_id = towns.town_id WHERE chunkX = ? AND chunkZ = ? AND world = ?";
     local parameters = {math.floor(BlockX / 16), math.floor(BlockZ / 16), Player:GetWorld():GetName()};
     local town = ExecuteStatement(sql, parameters)[1];
     if not (town) then --The block being broken is not part of a town, so placing is allowed
@@ -88,7 +88,7 @@ function OnPlayerUsingItem(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, C
 	if (BlockFace == -1) or (itemUsed == "lighter") or (itemUsed == "firecharge") then
 		local CallBacks = {
 			OnNextBlock = function(a_BlockX, a_BlockY, a_BlockZ, a_BlockType, a_BlockMeta) --The actual check if the item is allowed or not
-				local sql = "SELECT towns.town_id, towns.nation_id, towns.town_permissions, towns.town_fire_enabled FROM townChunks INNER JOIN towns ON townChunks.town_id = towns.town_id WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+				local sql = "SELECT towns.town_id, towns.nation_id, towns.town_permissions, towns.town_fire_enabled FROM plots INNER JOIN towns ON plots.town_id = towns.town_id WHERE chunkX = ? AND chunkZ = ? AND world = ?";
 			    local parameters = {math.floor(a_BlockX / 16), math.floor(a_BlockZ / 16), Player:GetWorld():GetName()};
 			    local town = ExecuteStatement(sql, parameters)[1];
 			    if not (town) then --The item is used on a block that is not part of a town, so it's allowed
@@ -130,7 +130,7 @@ function OnPlayerUsingItem(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, C
 end
 
 function OnPlayerUsingBlock(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, CursorY, CursorZ, BlockType, BlockMeta)
-	local sql = "SELECT towns.town_id, towns.nation_id, towns.town_permissions FROM townChunks INNER JOIN towns ON townChunks.town_id = towns.town_id WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+	local sql = "SELECT towns.town_id, towns.nation_id, towns.town_permissions FROM plots INNER JOIN towns ON plots.town_id = towns.town_id WHERE chunkX = ? AND chunkZ = ? AND world = ?";
     local parameters = {math.floor(BlockX / 16), math.floor(BlockZ / 16), Player:GetWorld():GetName()};
     local town = ExecuteStatement(sql, parameters)[1];
 
@@ -163,7 +163,7 @@ end
 
 function OnBlockSpread(World, BlockX, BlockY, BlockZ, Source)
 	if (Source == ssFireSpread) then
-		local sql = "SELECT towns.town_id, towns.town_fire_enabled FROM towns INNER JOIN townChunks ON towns.town_id = townChunks.town_id WHERE townChunks.chunkX = ? AND townChunks.chunkZ = ? AND townChunks.world = ?";
+		local sql = "SELECT towns.town_id, towns.town_fire_enabled FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
 		local parameters = {math.floor(BlockX / 16), math.floor(BlockZ / 16), World:GetName()};
 		local town = ExecuteStatement(sql, parameters)[1];
 

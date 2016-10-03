@@ -1,7 +1,7 @@
 function OnExploding(World, ExplosionSize, CanCauseFire, X, Y, Z, Source, SourceData)
-	local town_sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+	local town_sql = "SELECT town_id FROM plots WHERE chunkX = ? AND chunkZ = ? AND world = ?";
 	local town_parameters = {math.floor(X/16), math.floor(Z/16), World:GetName()};
-	
+
 	for a = -1, 1, 1 do
 		for b = -1, 1, 1 do
 			town_parameters[1] = town_parameters[1] + a
@@ -24,7 +24,7 @@ function OnTakeDamage(Receiver, TDI)
 	if Receiver:IsPlayer() and TDI.Attacker ~= nil and TDI.Attacker:IsPlayer() then
 		attacker_result = 1
 		receiver_result = 1
-		local town_sql = "SELECT town_id FROM townChunks WHERE chunkX = ? AND chunkZ = ?";
+		local town_sql = "SELECT town_id FROM plots WHERE chunkX = ? AND chunkZ = ?";
 		local pvp_sql = "SELECT town_pvp_enabled FROM towns WHERE town_id = ?";
 
 		local attacker_parameters = {TDI.Attacker:GetChunkX(), TDI.Attacker:GetChunkZ()};
@@ -48,7 +48,7 @@ end
 
 function OnSpawningMonster(World, Monster)
 	if(Monster:GetMobFamily() == 0) then --Check if the monster is hostile
-		local sql = "SELECT towns.town_mobs_enabled, townChunks.plot_mobs_enabled FROM towns INNER JOIN townChunks ON towns.town_id = townChunks.town_id WHERE townChunks.chunkX = ? AND townChunks.chunkZ = ?";
+		local sql = "SELECT towns.town_mobs_enabled, plots.plot_mobs_enabled FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ?";
 		local parameters = {Monster:GetChunkX(), Monster:GetChunkZ()};
 		local town = ExecuteStatement(sql, parameters)[1];
 
