@@ -1,4 +1,4 @@
-#Townvalds
+# Townvalds
 
 An open-source town plugin for [Cuberite](https://cuberite.org) (a custom Minecraft compatible game server written in C++). We're aiming to create a fully FOSS town system compatible with Cuberite implementing towns, nations, and permissions and protections management to follow along with them.
 
@@ -7,7 +7,8 @@ Do note that this channel talks about a whole lot of unrelated stuff as well, an
 
 Townvalds requires [Cuberite](https://cuberite.org) and a legitimate [Minecraft](https://www.minecraft.net) account to run.
 
-##(Planned) features
+## (Planned) features
+
  - Towns
    - Players can create and join towns
    - Towns allow protection from monsters, explosions, pvp, fire and griefing
@@ -35,7 +36,8 @@ Townvalds requires [Cuberite](https://cuberite.org) and a legitimate [Minecraft]
 
 Most of these features are configurable in the settings file inside the plugin folder (will be created at first run).
 
-###Current commands
+### Current commands
+
 | Command | Subcommands | Arguments | Aliases | Permission | Description |
 | ------- | --------- | ----------- | ------- | ---------- | ----------- |
 | /townvalds | version | | | townvalds.version | Displays the current plugin version to the player |
@@ -66,11 +68,12 @@ Most of these features are configurable in the settings file inside the plugin f
 | /resident | | | | townvalds.resident.info | Displays information about a resident |
 | /switchchat | | {global/nation/town/local} | /sc, /gc, /nc, /tc, /lc | townvalds.chat.switch | Switches the active chat channel |
 
-##License
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+## License
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License along with this program. If not, see http://www.gnu.org/licenses/.
 
 We also make use of the "lua-bit-numberlua" library, available [here](https://github.com/davidm/lua-bit-numberlua), which is licensed under it's own license.
