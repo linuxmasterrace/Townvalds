@@ -24,11 +24,13 @@ function OnPlayerJoined(Player) -- This is called after connection
 		Player:SetBedPos(Vector3i(spawnWorld:GetSpawnX(), spawnWorld:GetSpawnY(), spawnWorld:GetSpawnZ()), spawnWorld);
 	end
 
-	return true;
+	return false;
 end
 
 function OnPlayerSpawned(Player) -- This is called after both connection and respawning
     CheckPlayerInTown(Player, Player:GetChunkX(), Player:GetChunkZ());
+
+	return false;
 end
 
 function OnPlayerDestroyed(Player) -- This is called when a player that has been in the game disconnects
@@ -36,12 +38,14 @@ function OnPlayerDestroyed(Player) -- This is called when a player that has been
    local sql = "UPDATE residents SET last_online = datetime(\"now\") WHERE player_uuid = ?";
    local parameters = {Player:GetUUID()};
    ExecuteStatement(sql, parameters);
+   
    return false;
 end
 
 function OnPlayerMoving(Player, OldPosition, NewPosition)
     CheckPlayerInTown(Player, Player:GetChunkX(), Player:GetChunkZ());
-    return false;
+
+	return false;
 end
 
 function OnPlayerBreakingBlock(Player, BlockX, BlockY, BlockZ, BlockFace, BlockType, BlockMeta)
