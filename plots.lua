@@ -5,7 +5,7 @@ function PlotClaim(Split, Player)
 	local parameter = {UUID};
 	local resident = ExecuteStatement(sql, parameter)[1];
 
-	local sql = "SELECT townChunk_id, town_id, owner FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?" ;
+	local sql = "SELECT townChunk_id, town_id, owner FROM plots WHERE chunkX = ? AND chunkZ = ? AND world = ?" ;
 	local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 	local plot = ExecuteStatement(sql, parameters)[1];
 
@@ -24,7 +24,7 @@ function PlotClaim(Split, Player)
 			Player:SendMessageFailure("This plot is already claimed by " .. owner[2]);
 		end
 	else
-		local sql = "UPDATE townChunks SET owner = ? WHERE townChunk_id = ?";
+		local sql = "UPDATE plots SET owner = ? WHERE townChunk_id = ?";
 		local parameter = {UUID, plot[1]};
 		ExecuteStatement(sql, parameter);
 
@@ -41,7 +41,7 @@ function PlotUnclaim(Split, Player)
 	local parameter = {UUID};
 	local resident = ExecuteStatement(sql, parameter)[1];
 
-	local sql = "SELECT townChunk_id, town_id, owner FROM townChunks WHERE chunkX = ? AND chunkZ = ? AND world = ?" ;
+	local sql = "SELECT townChunk_id, town_id, owner FROM plots WHERE chunkX = ? AND chunkZ = ? AND world = ?" ;
 	local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 	local plot = ExecuteStatement(sql, parameters)[1];
 
@@ -53,7 +53,7 @@ function PlotUnclaim(Split, Player)
 	elseif ((plot[3] == nil) or not (plot[3] == UUID)) then
 		Player:SendMessageFailure("You can not unclaim a plot that is not yours");
 	else
-		local sql = "UPDATE townChunks SET owner = NULL WHERE townChunk_id = ?";
+		local sql = "UPDATE plots SET owner = NULL WHERE townChunk_id = ?";
 		local parameter = {plot[1]};
 		ExecuteStatement(sql, parameter);
 
@@ -74,7 +74,7 @@ function PlotToggleMobs(Split, Player)
 		Player:SendMessageFailure("You can't toggle if you're not part of a town");
 		return true;
 	else
-		local sql = "SELECT towns.town_id, towns.town_owner, towns.town_mobs_enabled, townChunks.plot_mobs_enabled FROM towns INNER JOIN townChunks ON towns.town_id = townChunks.town_id WHERE townChunks.chunkX = ? AND townChunks.chunkZ = ? AND townChunks.world = ?";
+		local sql = "SELECT towns.town_id, towns.town_owner, towns.town_mobs_enabled, plots.plot_mobs_enabled FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
 		local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 		local plot = ExecuteStatement(sql, parameters)[1];
 
@@ -107,19 +107,19 @@ function PlotToggleMobs(Split, Player)
 		end
 
 		if(toggle == 2) then --The user wants the plot to inherit the town value
-			local sql = "UPDATE townChunks SET plot_mobs_enabled = 2 WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+			local sql = "UPDATE plots SET plot_mobs_enabled = 2 WHERE chunkX = ? AND chunkZ = ? AND world = ?";
 			local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 			ExecuteStatement(sql, parameters);
 
 			Player:SendMessageSuccess("Mob spawning now inherits the town value");
 		elseif(toggle == 1) then --The user wants the plot to have mob spawning enabled
-			local sql = "UPDATE townChunks SET plot_mobs_enabled = 1 WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+			local sql = "UPDATE plots SET plot_mobs_enabled = 1 WHERE chunkX = ? AND chunkZ = ? AND world = ?";
 			local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 			ExecuteStatement(sql, parameters);
 
 			Player:SendMessageSuccess("Mob spawning is now enabled in this plot");
 		else --The user wants the plot to have mob spawning disabled
-			local sql = "UPDATE townChunks SET plot_mobs_enabled = 0 WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+			local sql = "UPDATE plots SET plot_mobs_enabled = 0 WHERE chunkX = ? AND chunkZ = ? AND world = ?";
 			local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 			ExecuteStatement(sql, parameters);
 
