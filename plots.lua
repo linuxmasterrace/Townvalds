@@ -63,67 +63,63 @@ function PlotUnclaim(Split, Player)
 	return true;
 end
 
+PLOTMOBSINHERIT = 0x1;
+PLOTMOBSENABLED = 0x2;
 function PlotToggleMobs(Split, Player)
 	local UUID = Player:GetUUID();
+	local townId = GetPlayerTown(UUID);
 
-	local sql = "SELECT town_id FROM town_residents WHERE player_uuid = ?";
-	local parameter = {UUID};
-	local town_id = ExecuteStatement(sql, parameter)[1][1];
-
-	if (town_id == nil) then
+	if not (townId) then
 		Player:SendMessageFailure("You can't toggle if you're not part of a town");
 		return true;
 	else
-		local sql = "SELECT towns.town_id, towns.town_owner, towns.town_mobs_enabled, plots.plot_mobs_enabled FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
+		local sql = "SELECT plots.plot_id, towns.town_id, plots.owner, towns.town_mobs_enabled, plots.plot_features FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
 		local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 		local plot = ExecuteStatement(sql, parameters)[1];
 
-		local toggle;
-		if(plot == nil) then
+		local newStatus;
+		if (plot == nil) then
 			Player:SendMessageFailure("You have to be in a plot to toggle it's features");
 			return true;
-		elseif not(plot[2] == UUID) then
-			Player:SendMessageFailure("You can't toggle if you're not the owner of the town");
+		elseif not (plot[3] == UUID) and not (plot[3]) and not (TownRanks[GetPlayerTownRank(UUID)] >= TownRanks['assistant']) then
+			Player:SendMessageFailure("You can't toggle if you're not the owner of the plot");
 			return true;
 		else
-			if not(Split[4] == nil) then --The user wants the plot to inherit the town value
-				if not(Split[4] == "inherit") then
+			if not (Split[4] == nil) then --The user wants the plot to inherit the town value
+				if not (Split[4] == "inherit") then
 					Player:SendMessageFailure("This argument is not understood");
 					return true;
 				else
-					toggle = 2;
+					if not (bit32.band(plot[5], PLOTMOBSENABLED) == 0) then --Mobs are enabled
+						newStatus = bit32.bxor(plot[5], PLOTMOBSENABLED); --Remove on status
+					else --Mobs are not enabled, continue
+						newStatus = plot[5];
+					end
+
+					if (bit32.band(plot[5], PLOTMOBSINHERIT) == 0) then --Mobs are not inheriting from the town status
+						newStatus = bit32.bor(newStatus, PLOTMOBSINHERIT); --Set inherit status
+					end
+					Player:SendMessageSuccess("Mob spawning now inherits the town value");
 				end
 			else
-				if(plot[4] == 2 and plot[3] == 1) then --plot[4] at 2 means it inherits the town status
-					toggle = 0;
-				elseif(plot[4] == 2 and plot[3] == 0) then
-					toggle = 1;
-				elseif(plot[4] == 1) then
-					toggle = 0;
-				else
-					toggle = 1;
+				if not (bit32.band(plot[5], PLOTMOBSINHERIT) == 0) then --Mobs are inheriting from the town status
+					newStatus = bit32.bxor(plot[5], PLOTMOBSINHERIT); --Remove inherit status if set
+				else --Mobs are not inheriting from the town status, continue
+					newStatus = plot[5];
+				end
+
+				if (bit32.band(plot[5], PLOTMOBSENABLED) == 0) then --Mobs are off
+					newStatus = bit32.bor(newStatus, PLOTMOBSENABLED);
+					Player:SendMessageSuccess("Mob spawning is now enabled in this plot");
+				else --Mobs are enabled
+					newStatus = bit32.bxor(newStatus, PLOTMOBSENABLED);
+					Player:SendMessageSuccess("Mob spawning is now disabled in this plot");
 				end
 			end
-		end
 
-		if(toggle == 2) then --The user wants the plot to inherit the town value
-			local sql = "UPDATE plots SET plot_mobs_enabled = 2 WHERE chunkX = ? AND chunkZ = ? AND world = ?";
-			local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
+			local sql = "UPDATE plots SET plot_features = ? WHERE plot_id = ?";
+			local parameters = {newStatus, plot[1]};
 			ExecuteStatement(sql, parameters);
-
-			Player:SendMessageSuccess("Mob spawning now inherits the town value");
-		elseif(toggle == 1) then --The user wants the plot to have mob spawning enabled
-			local sql = "UPDATE plots SET plot_mobs_enabled = 1 WHERE chunkX = ? AND chunkZ = ? AND world = ?";
-			local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
-			ExecuteStatement(sql, parameters);
-
-			Player:SendMessageSuccess("Mob spawning is now enabled in this plot");
-		else --The user wants the plot to have mob spawning disabled
-			local sql = "UPDATE plots SET plot_mobs_enabled = 0 WHERE chunkX = ? AND chunkZ = ? AND world = ?";
-			local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
-			ExecuteStatement(sql, parameters);
-
-			Player:SendMessageSuccess("Mob spawning is now disabled in this plot");
 		end
 
 		return true;
