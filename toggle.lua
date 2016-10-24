@@ -7,7 +7,7 @@ function OnExploding(World, ExplosionSize, CanCauseFire, X, Y, Z, Source, Source
 			parameters[1] = parameters[1] + a;
 			parameters[2] = parameters[2] + b;
 			local townId = ExecuteStatement(sql, parameters)[1];
-			if townId ~= nil then
+			if (townId ~= nil) then
 				local sql = "SELECT town_features FROM towns WHERE town_id = ?";
 				local parameters = {townId[1]};
 				local explosions = ExecuteStatement(sql, parameters)[1][1];
