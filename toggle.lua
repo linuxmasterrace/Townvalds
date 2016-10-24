@@ -1,21 +1,23 @@
 function OnExploding(World, ExplosionSize, CanCauseFire, X, Y, Z, Source, SourceData)
-	local town_sql = "SELECT town_id FROM plots WHERE chunkX = ? AND chunkZ = ? AND world = ?";
-	local town_parameters = {math.floor(X/16), math.floor(Z/16), World:GetName()};
+	local sql = "SELECT town_id FROM plots WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+	local parameters = {math.floor(X/16), math.floor(Z/16), World:GetName()};
 
 	for a = -1, 1, 1 do
 		for b = -1, 1, 1 do
-			town_parameters[1] = town_parameters[1] + a
-			town_parameters[2] = town_parameters[2] + b
-			if ExecuteStatement(town_sql, town_parameters)[1] ~= nil then
-				local town_id = ExecuteStatement(town_sql, town_parameters)[1][1];
-				local explosion_sql = "SELECT town_explosions_enabled FROM towns WHERE town_id = ?";
-				local explosion_parameters = {town_id};
-				if ExecuteStatement(explosion_sql, explosion_parameters)[1][1] == 0 then
+			parameters[1] = parameters[1] + a;
+			parameters[2] = parameters[2] + b;
+			local townId = ExecuteStatement(sql, parameters)[1];
+			if townId ~= nil then
+				local sql = "SELECT town_features FROM towns WHERE town_id = ?";
+				local parameters = {townId[1]};
+				local explosions = ExecuteStatement(sql, parameters)[1][1];
+
+				if (bit32.band(explosions, TOWNEXPLOSIONSENABLED) == 0) then --Explosions are disabled
 					return true;
 				end
 			end
-			town_parameters[1] = town_parameters[1] - a --reset chunks
-			town_parameters[2] = town_parameters[2] - b
+			parameters[1] = parameters[1] - a; --reset chunks
+			parameters[2] = parameters[2] - b;
 		end
 	end
 end

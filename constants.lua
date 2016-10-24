@@ -19,5 +19,7 @@ TownRanks = {
 	["mayor"] = 3,
 }
 
+TOWNEXPLOSIONSENABLED = 0x1;
+
 PLOTMOBSINHERIT = 0x1;
 PLOTMOBSENABLED = 0x2;
