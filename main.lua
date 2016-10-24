@@ -1,5 +1,3 @@
-PLUGIN = nil;
-
 function Initialize(Plugin)
 	PLUGIN = Plugin;
 	PLUGIN:SetName("Townvalds");

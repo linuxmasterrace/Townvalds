@@ -63,8 +63,6 @@ function PlotUnclaim(Split, Player)
 	return true;
 end
 
-PLOTMOBSINHERIT = 0x1;
-PLOTMOBSENABLED = 0x2;
 function PlotToggleMobs(Split, Player)
 	local UUID = Player:GetUUID();
 	local townId = GetPlayerTown(UUID);

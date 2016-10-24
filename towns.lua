@@ -1,3 +1,6 @@
+Deleting = {};
+Leaving = {};
+
 function TownCreate(Split, Player)
 	if (Split[3] == nil) then
 		Player:SendMessageFailure("You have to enter a town name! Usage: /town new (name)");
@@ -52,7 +55,6 @@ function TownCreate(Split, Player)
 	return true;
 end
 
-Deleting = {};
 function TownDelete(Split, Player)
 	local UUID = Player:GetUUID();
 	local town = {
@@ -372,7 +374,6 @@ function TownJoin(Split, Player)
 	return true;
 end
 
-Leaving = {};
 function TownLeave(Split, Player)
 	local UUID = Player:GetUUID();
 
@@ -484,11 +485,6 @@ function TownOnline(Split, Player)
 	return true;
 end
 
-TownRanks = {
-	["resident"] = 1,
-	["assistant"] = 2,
-	["mayor"] = 3,
-}
 function TownRank(Split, Player)
 	local UUID = Player:GetUUID();
 
@@ -783,18 +779,6 @@ function TownSpawnSet(Split, Player)
 	return true;
 end
 
-RESIDENTBUILD = 0x1;
-RESIDENTDESTROY = 0x2;
-RESIDENTSWITCH = 0x4;
-RESIDENTITEMUSE = 0x8;
-ALLYBUILD = 0x10;
-ALLYDESTROY = 0x20;
-ALLYSWITCH = 0x40;
-ALLYITEMUSE = 0x80;
-OUTSIDERBUILD = 0x100;
-OUTSIDERDESTROY = 0x200;
-OUTSIDERSWITCH = 0x400;
-OUTSIDERITEMUSE = 0x800;
 function TownPermSet(Split, Player)
 	local UUID = Player:GetUUID();
 

@@ -1,11 +1,10 @@
 InTown = {}
-
 function CheckPlayerInTown(Player, chunkX, chunkZ)
     local sql = "SELECT towns.town_name, plots.chunkX, plots.chunkZ, plots.world FROM plots LEFT JOIN towns ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
     local parameters = {chunkX, chunkZ, Player:GetWorld():GetName()};
     local result = ExecuteStatement(sql, parameters)[1];
     local town = InTown[Player:GetUUID()];
-	
+
     if (result) and (result[1]) and (not (town) or not (town == result[1])) then
         Player:SendMessage("You're in the town " .. result[1]);
         InTown[Player:GetUUID()] = result[1];
