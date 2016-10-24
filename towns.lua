@@ -585,24 +585,22 @@ function TownToggleExplosions(Split, Player)
 	elseif not (TownRanks[town[2]] >= TownRanks['assistant']) then
 		Player:SendMessageFailure("You have to be higher ranked to toggle explosions");
 	else
-		local sql = "SELECT town_explosions_enabled FROM towns WHERE town_id = ?";
+		local sql = "SELECT town_features FROM towns WHERE town_id = ?";
 		local parameter = {town[1]};
 		town[3] = ExecuteStatement(sql, parameter)[1][1];
 
-		local sql = "UPDATE towns SET town_explosions_enabled = ? WHERE town_id = ?";
-		local parameter;
-
-		if (town[3] == 0) then
-			parameter = {1, town[1]};
-
-			Player:SendMessageSuccess("Explosions enabled");
-		else
-			parameter = {0, town[1]};
-
-			Player:SendMessageSuccess("Explosions disabled");
+		local newStatus;
+		if (bit32.band(town[3], TOWNEXPLOSIONSENABLED) == 0) then --Explosions are off
+			newStatus = bit32.bor(town[3], TOWNEXPLOSIONSENABLED);
+			Player:SendMessageSuccess("Explosions are now enabled");
+		else --Explosions are on
+			newStatus = bit32.bxor(town[3], TOWNEXPLOSIONSENABLED);
+			Player:SendMessageSuccess("Explosions are now disabled");
 		end
 
-		ExecuteStatement(sql, parameter);
+		local sql = "UPDATE towns SET town_features = ? WHERE town_id = ?";
+		local parameters = {newStatus, town[1]};
+		ExecuteStatement(sql, parameters);
 	end
 	return true;
 end
