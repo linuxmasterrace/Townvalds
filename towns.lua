@@ -593,7 +593,7 @@ function TownToggleExplosions(Split, Player)
 		if (bit32.band(town[3], TOWNEXPLOSIONSENABLED) == 0) then --Explosions are off
 			newStatus = bit32.bor(town[3], TOWNEXPLOSIONSENABLED);
 			Player:SendMessageSuccess("Explosions are now enabled");
-		else --Mobs are on
+		else --Explosions are on
 			newStatus = bit32.bxor(town[3], TOWNEXPLOSIONSENABLED);
 			Player:SendMessageSuccess("Explosions are now disabled");
 		end
