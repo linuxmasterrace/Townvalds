@@ -38,7 +38,7 @@ function OnPlayerDestroyed(Player) -- This is called when a player that has been
    local sql = "UPDATE residents SET last_online = datetime(\"now\") WHERE player_uuid = ?";
    local parameters = {Player:GetUUID()};
    ExecuteStatement(sql, parameters);
-   
+
    return false;
 end
 
@@ -92,7 +92,7 @@ function OnPlayerUsingItem(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, C
 	if (BlockFace == -1) or (itemUsed == "lighter") or (itemUsed == "firecharge") then
 		local CallBacks = {
 			OnNextBlock = function(a_BlockX, a_BlockY, a_BlockZ, a_BlockType, a_BlockMeta) --The actual check if the item is allowed or not
-				local sql = "SELECT towns.town_id, towns.nation_id, towns.town_permissions, towns.town_fire_enabled FROM plots INNER JOIN towns ON plots.town_id = towns.town_id WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+				local sql = "SELECT towns.town_id, towns.nation_id, towns.town_permissions, towns.town_features FROM plots INNER JOIN towns ON plots.town_id = towns.town_id WHERE chunkX = ? AND chunkZ = ? AND world = ?";
 			    local parameters = {math.floor(a_BlockX / 16), math.floor(a_BlockZ / 16), Player:GetWorld():GetName()};
 			    local town = ExecuteStatement(sql, parameters)[1];
 			    if not (town) then --The item is used on a block that is not part of a town, so it's allowed
@@ -110,7 +110,7 @@ function OnPlayerUsingItem(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, C
 
 					if (allowed == true) then
 						if (itemUsed == "lighter") or (itemUsed == "firecharge") then
-							if (town[4] == 0) then --If fire is disabled in this town, prevent the player from starting a fire
+							if (bit32.band(town[4], TOWNFIREENABLED) == 0) then --If fire is disabled in this town, prevent the player from starting a fire
 								return false; --Prevent item use
 							else
 								return true; --Allow item use
@@ -167,11 +167,11 @@ end
 
 function OnBlockSpread(World, BlockX, BlockY, BlockZ, Source)
 	if (Source == ssFireSpread) then
-		local sql = "SELECT towns.town_id, towns.town_fire_enabled FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
+		local sql = "SELECT towns.town_id, towns.town_features FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
 		local parameters = {math.floor(BlockX / 16), math.floor(BlockZ / 16), World:GetName()};
 		local town = ExecuteStatement(sql, parameters)[1];
 
-		if (town and town[2] == 0) then --If fire is disabled in this town, prevent the fire from spreading
+		if (town) and (bit32.band(town[2], TOWNFIREENABLED) == 0) then --If fire is disabled in this town, prevent the fire from spreading
 			return true;
 		else
 			return false;
