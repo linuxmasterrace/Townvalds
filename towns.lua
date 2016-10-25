@@ -655,24 +655,22 @@ function TownToggleMobs(Split, Player)
 		Player:SendMessageFailure("You have to be higher ranked to toggle pvp");
 	else
 
-		local sql = "SELECT town_mobs_enabled FROM towns WHERE town_id = ?";
+		local sql = "SELECT town_features FROM towns WHERE town_id = ?";
 		local parameter = {town[1]};
 		town[3] = ExecuteStatement(sql, parameter)[1][1];
 
-		local sql = "UPDATE towns SET town_mobs_enabled = ? WHERE town_id = ?";
-		local parameter;
-
-		if (town[3] == 0) then
-			parameter = {1, town[1]};
-
-			Player:SendMessageSuccess("Mob spawning enabled");
-		else
-			parameter = {0, town[1]};
-
-			Player:SendMessageSuccess("Mob spawning disabled");
+		local newStatus;
+		if (bit32.band(town[3], TOWNMOBSENABLED) == 0) then --Mobs are off
+			newStatus = bit32.bor(town[3], TOWNMOBSENABLED);
+			Player:SendMessageSuccess("Mob spawning is now enabled");
+		else --Mobs are on
+			newStatus = bit32.bxor(town[3], TOWNMOBSENABLED);
+			Player:SendMessageSuccess("Mob spawning is now disabled");
 		end
 
-		ExecuteStatement(sql, parameter);
+		local sql = "UPDATE towns SET town_features = ? WHERE town_id = ?";
+		local parameters = {newStatus, town[1]};
+		ExecuteStatement(sql, parameters);
 	end
 
 	return true;

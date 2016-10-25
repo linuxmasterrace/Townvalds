@@ -50,13 +50,13 @@ end
 
 function OnSpawningMonster(World, Monster)
 	if(Monster:GetMobFamily() == 0) then --Check if the monster is hostile
-		local sql = "SELECT towns.town_mobs_enabled, plots.plot_features FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ?";
+		local sql = "SELECT towns.town_features, plots.plot_features FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ?";
 		local parameters = {Monster:GetChunkX(), Monster:GetChunkZ()};
 		local town = ExecuteStatement(sql, parameters)[1];
 
 		if not(town == nil) then --Check if the mob is in a town chunk
 			if not (bit32.band(town[2], PLOTMOBSINHERIT) == 0) then --The chunk inherit it's mob spawning property from the town
-				if(town[1] == 0) then --Check if mob spawning is allowed
+				if(bit32.band(town[1], TOWNMOBSENABLED) == 0) then --Mob spawning is not allowed by the town
 					return true;
 				end
 			elseif (bit32.band(town[2], PLOTMOBSENABLED) == 0) then --Mob spawning is not allowed
