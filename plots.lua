@@ -88,25 +88,25 @@ function PlotToggleMobs(Split, Player)
 					Player:SendMessageFailure("This argument is not understood");
 					return true;
 				else
-					if not (bit32.band(plot[5], PLOTMOBSENABLED) == 0) then --Mobs are enabled
-						newStatus = bit32.bxor(plot[5], PLOTMOBSENABLED); --Remove on status
+					if not (bit32.band(plot[4], PLOTMOBSENABLED) == 0) then --Mobs are enabled
+						newStatus = bit32.bxor(plot[4], PLOTMOBSENABLED); --Remove on status
 					else --Mobs are not enabled, continue
-						newStatus = plot[5];
+						newStatus = plot[4];
 					end
 
-					if (bit32.band(plot[5], PLOTMOBSINHERIT) == 0) then --Mobs are not inheriting from the town status
+					if (bit32.band(plot[4], PLOTMOBSINHERIT) == 0) then --Mobs are not inheriting from the town status
 						newStatus = bit32.bor(newStatus, PLOTMOBSINHERIT); --Set inherit status
 					end
 					Player:SendMessageSuccess("Mob spawning now inherits the town value");
 				end
 			else
-				if not (bit32.band(plot[5], PLOTMOBSINHERIT) == 0) then --Mobs are inheriting from the town status
-					newStatus = bit32.bxor(plot[5], PLOTMOBSINHERIT); --Remove inherit status if set
+				if not (bit32.band(plot[4], PLOTMOBSINHERIT) == 0) then --Mobs are inheriting from the town status
+					newStatus = bit32.bxor(plot[4], PLOTMOBSINHERIT); --Remove inherit status if set
 				else --Mobs are not inheriting from the town status, continue
-					newStatus = plot[5];
+					newStatus = plot[4];
 				end
 
-				if (bit32.band(plot[5], PLOTMOBSENABLED) == 0) then --Mobs are off
+				if (bit32.band(plot[4], PLOTMOBSENABLED) == 0) then --Mobs are off
 					newStatus = bit32.bor(newStatus, PLOTMOBSENABLED);
 					Player:SendMessageSuccess("Mob spawning is now enabled in this plot");
 				else --Mobs are enabled
