@@ -244,7 +244,7 @@ g_PluginInfo =
 					{
 						mobs =
 						{
-							Handler = PlotToggleMobs,
+							Handler = PlotToggle,
 							HelpString = "Toggles mob spawning in the current plot",
 							Permission = "townvalds.plot.toggle"
 						}
