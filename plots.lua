@@ -71,7 +71,7 @@ function PlotToggleMobs(Split, Player)
 		Player:SendMessageFailure("You can't toggle if you're not part of a town");
 		return true;
 	else
-		local sql = "SELECT plots.plot_id, towns.town_id, plots.owner, towns.town_mobs_enabled, plots.plot_features FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
+		local sql = "SELECT plots.plot_id, towns.town_id, plots.owner, plots.plot_features FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
 		local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 		local plot = ExecuteStatement(sql, parameters)[1];
 
