@@ -175,6 +175,12 @@ g_PluginInfo =
 							HelpString = "Toggles mob spawning in the current town",
 							Permission = "townvalds.town.toggle"
 						},
+						fire =
+						{
+							Handler = TownToggleFire,
+							HelpString = "Toggles fire in the current town",
+							Permission = "townvalds.town.toggle"
+						},
 					}
 				},
 				["set"] =

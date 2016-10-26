@@ -674,6 +674,39 @@ function TownToggleMobs(Split, Player)
 	return true;
 end
 
+function TownToggleFire(Split, Player)
+	local UUID = Player:GetUUID();
+
+	local town = {
+		GetPlayerTown(UUID),
+		GetPlayerTownRank(UUID);
+	};
+
+	if not (town[1]) then
+		Player:SendMessageFailure("You have to be part of a town to toggle fires");
+	elseif not (TownRanks[town[2]] >= TownRanks['assistant']) then
+		Player:SendMessageFailure("You have to be higher ranked to toggle fires");
+	else
+		local sql = "SELECT town_features FROM towns WHERE town_id = ?";
+		local parameter = {town[1]};
+		town[3] = ExecuteStatement(sql, parameter)[1][1];
+
+		local newStatus;
+		if (bit32.band(town[3], TOWNFIREENABLED) == 0) then --Explosions are off
+			newStatus = bit32.bor(town[3], TOWNFIREENABLED);
+			Player:SendMessageSuccess("Fires are now enabled");
+		else --Explosions are on
+			newStatus = bit32.bxor(town[3], TOWNFIREENABLED);
+			Player:SendMessageSuccess("Fires are now disabled");
+		end
+
+		local sql = "UPDATE towns SET town_features = ? WHERE town_id = ?";
+		local parameters = {newStatus, town[1]};
+		ExecuteStatement(sql, parameters);
+	end
+	return true;
+end
+
 function TownSpawn(Split, Player)
 	if not (config.enable_town_spawns == 1) and not (Player:HasPermission("townvalds.town.spawn.admin")) then
 		Player:SendMessageFailure("Teleporting to town spawns is disabled by the server administrator");
