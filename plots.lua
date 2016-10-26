@@ -63,7 +63,7 @@ function PlotUnclaim(Split, Player)
 	return true;
 end
 
-function PlotToggleMobs(Split, Player)
+function PlotToggle(Split, Player)
 	local UUID = Player:GetUUID();
 	local townId = GetPlayerTown(UUID);
 
@@ -71,7 +71,7 @@ function PlotToggleMobs(Split, Player)
 		Player:SendMessageFailure("You can't toggle if you're not part of a town");
 		return true;
 	else
-		local sql = "SELECT plots.plot_id, towns.town_id, plots.owner, towns.town_mobs_enabled, plots.plot_features FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
+		local sql = "SELECT plots.plot_id, towns.town_id, plots.owner, plots.plot_features FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
 		local parameters = {Player:GetChunkX(), Player:GetChunkZ(), Player:GetWorld():GetName()};
 		local plot = ExecuteStatement(sql, parameters)[1];
 
@@ -83,35 +83,45 @@ function PlotToggleMobs(Split, Player)
 			Player:SendMessageFailure("You can't toggle if you're not the owner of the plot");
 			return true;
 		else
+			local PERMISSION;
+			local INHERIT;
+			local string;
+
+			if (Split[3] == 'mobs') then
+				PERMISSION = PLOTMOBSENABLED;
+				INHERIT = PLOTMOBSINHERIT;
+				string = "Mob spawning";
+			end
+
 			if not (Split[4] == nil) then --The user wants the plot to inherit the town value
 				if not (Split[4] == "inherit") then
 					Player:SendMessageFailure("This argument is not understood");
 					return true;
 				else
-					if not (bit32.band(plot[5], PLOTMOBSENABLED) == 0) then --Mobs are enabled
-						newStatus = bit32.bxor(plot[5], PLOTMOBSENABLED); --Remove on status
+					if not (bit32.band(plot[4], PERMISSION) == 0) then --Mobs are enabled
+						newStatus = bit32.bxor(plot[4], PERMISSION); --Remove on status
 					else --Mobs are not enabled, continue
-						newStatus = plot[5];
+						newStatus = plot[4];
 					end
 
-					if (bit32.band(plot[5], PLOTMOBSINHERIT) == 0) then --Mobs are not inheriting from the town status
-						newStatus = bit32.bor(newStatus, PLOTMOBSINHERIT); --Set inherit status
+					if (bit32.band(plot[4], INHERIT) == 0) then --Mobs are not inheriting from the town status
+						newStatus = bit32.bor(newStatus, INHERIT); --Set inherit status
 					end
-					Player:SendMessageSuccess("Mob spawning now inherits the town value");
+					Player:SendMessageSuccess(string .. " now inherits the town value");
 				end
 			else
-				if not (bit32.band(plot[5], PLOTMOBSINHERIT) == 0) then --Mobs are inheriting from the town status
-					newStatus = bit32.bxor(plot[5], PLOTMOBSINHERIT); --Remove inherit status if set
+				if not (bit32.band(plot[4], INHERIT) == 0) then --Mobs are inheriting from the town status
+					newStatus = bit32.bxor(plot[4], INHERIT); --Remove inherit status if set
 				else --Mobs are not inheriting from the town status, continue
-					newStatus = plot[5];
+					newStatus = plot[4];
 				end
 
-				if (bit32.band(plot[5], PLOTMOBSENABLED) == 0) then --Mobs are off
-					newStatus = bit32.bor(newStatus, PLOTMOBSENABLED);
-					Player:SendMessageSuccess("Mob spawning is now enabled in this plot");
+				if (bit32.band(plot[4], PERMISSION) == 0) then --Mobs are off
+					newStatus = bit32.bor(newStatus, PERMISSION);
+					Player:SendMessageSuccess(string .. " is now enabled in this plot");
 				else --Mobs are enabled
-					newStatus = bit32.bxor(newStatus, PLOTMOBSENABLED);
-					Player:SendMessageSuccess("Mob spawning is now disabled in this plot");
+					newStatus = bit32.bxor(newStatus, PERMISSION);
+					Player:SendMessageSuccess(string .. " is now disabled in this plot");
 				end
 			end
 
