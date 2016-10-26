@@ -24,26 +24,26 @@ end
 
 function OnTakeDamage(Receiver, TDI)
 	if Receiver:IsPlayer() and TDI.Attacker ~= nil and TDI.Attacker:IsPlayer() then
-		attacker_result = 1
-		receiver_result = 1
-		local town_sql = "SELECT town_id FROM plots WHERE chunkX = ? AND chunkZ = ?";
-		local pvp_sql = "SELECT town_pvp_enabled FROM towns WHERE town_id = ?";
+		local sql = "SELECT town_id FROM plots WHERE chunkX = ? AND chunkZ = ? AND world = ?";
 
-		local attacker_parameters = {TDI.Attacker:GetChunkX(), TDI.Attacker:GetChunkZ()};
-		local receiver_parameters = {Receiver:GetChunkX(), Receiver:GetChunkZ()};
+		local parameters_attacker = {TDI.Attacker:GetChunkX(), TDI.Attacker:GetChunkZ(), TDI.Attacker:GetWorld():GetName()};
+		local parameters_receiver = {Receiver:GetChunkX(), Receiver:GetChunkZ(), Receiver:GetWorld():GetName()};
 
-		if ExecuteStatement(town_sql, attacker_parameters)[1] ~= nil then
-			local attacker_town_id = ExecuteStatement(town_sql, attacker_parameters)[1][1];
-			attacker_result = ExecuteStatement(pvp_sql, {attacker_town_id})[1][1];
-		end
+		local townId_attacker = ExecuteStatement(sql, parameters_attacker)[1];
+		local townId_receiver = ExecuteStatement(sql, parameters_receiver)[1];
 
-		if ExecuteStatement(town_sql, receiver_parameters)[1] ~= nil then
-			local receiver_town_id = ExecuteStatement(town_sql, receiver_parameters)[1][1];
-			receiver_result = ExecuteStatement(pvp_sql, {receiver_town_id})[1][1];
-		end
+		if (townId_attacker ~= nil) or (townId_receiver ~= nil) then
+			if (townId_attacker == nil) and not (townId_receiver == nil) then
+				townId_attacker = {townId_receiver[1]}; --Set it so we can use it in the query
+			end
 
-		if attacker_result == 0 or receiver_result == 0 then
-			return true;
+			local sql = "SELECT town_features FROM towns WHERE town_id = ?";
+			local parameter = {townId_attacker[1]};
+			local townFeatures = ExecuteStatement(sql, parameter)[1][1];
+
+			if (bit32.band(townFeatures, TOWNPVPENABLED) == 0) then --PVP is disabled
+				return true;
+			end
 		end
 	end
 end
