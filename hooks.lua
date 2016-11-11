@@ -92,7 +92,7 @@ function OnPlayerUsingItem(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, C
 	if (BlockFace == -1) or (itemUsed == "lighter") or (itemUsed == "firecharge") then
 		local CallBacks = {
 			OnNextBlock = function(a_BlockX, a_BlockY, a_BlockZ, a_BlockType, a_BlockMeta) --The actual check if the item is allowed or not
-				local sql = "SELECT towns.town_id, towns.nation_id, towns.town_permissions, towns.town_features FROM plots INNER JOIN towns ON plots.town_id = towns.town_id WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+				local sql = "SELECT towns.town_id, towns.nation_id, towns.town_permissions, towns.town_features, plots.plot_features FROM plots INNER JOIN towns ON plots.town_id = towns.town_id WHERE chunkX = ? AND chunkZ = ? AND world = ?";
 			    local parameters = {math.floor(a_BlockX / 16), math.floor(a_BlockZ / 16), Player:GetWorld():GetName()};
 			    local town = ExecuteStatement(sql, parameters)[1];
 			    if not (town) then --The item is used on a block that is not part of a town, so it's allowed
@@ -110,11 +110,15 @@ function OnPlayerUsingItem(Player, BlockX, BlockY, BlockZ, BlockFace, CursorX, C
 
 					if (allowed == true) then
 						if (itemUsed == "lighter") or (itemUsed == "firecharge") then
-							if (bit32.band(town[4], TOWNFIREENABLED) == 0) then --If fire is disabled in this town, prevent the player from starting a fire
-								return false; --Prevent item use
-							else
-								return true; --Allow item use
+							if not (bit32.band(town[5], PLOTFIREINHERIT) == 0) then -- The plot inherits it's fire property from the town
+								if (bit32.band(town[4], TOWNFIREENABLED) == 0) then -- If fire is disabled in this town, prevent the fire from spreading
+									return false;
+								end
+							elseif (bit32.band(town[5], PLOTFIREENABLED) == 0) then -- Fire is disabled
+								return false;
 							end
+
+							return true;
 						else
 							return true; --Allow item use
 						end
@@ -167,14 +171,109 @@ end
 
 function OnBlockSpread(World, BlockX, BlockY, BlockZ, Source)
 	if (Source == ssFireSpread) then
-		local sql = "SELECT towns.town_id, towns.town_features FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
+		local sql = "SELECT plots.plot_features, towns.town_features FROM plots INNER JOIN towns ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
 		local parameters = {math.floor(BlockX / 16), math.floor(BlockZ / 16), World:GetName()};
 		local town = ExecuteStatement(sql, parameters)[1];
 
-		if (town) and (bit32.band(town[2], TOWNFIREENABLED) == 0) then --If fire is disabled in this town, prevent the fire from spreading
-			return true;
-		else
-			return false;
+		if (town) then -- Check if the block is in a plot
+			if not (bit32.band(town[1], PLOTFIREINHERIT) == 0) then -- The plot inherits it's fire property from the town
+				if (bit32.band(town[2], TOWNFIREENABLED) == 0) then -- If fire is disabled in this town, prevent the fire from spreading
+					return true;
+				end
+			elseif (bit32.band(town[1], PLOTFIREENABLED) == 0) then -- Fire is disabled
+				return true;
+			end
+		end
+	end
+
+	return false;
+end
+
+function OnExploding(World, ExplosionSize, CanCauseFire, X, Y, Z, Source, SourceData)
+	local sql = "SELECT plot_id, town_id FROM plots WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+	local parameters = {math.floor(X/16), math.floor(Z/16), World:GetName()};
+
+	for a = -1, 1, 1 do
+		for b = -1, 1, 1 do
+			parameters[1] = parameters[1] + a;
+			parameters[2] = parameters[2] + b;
+			local plot = ExecuteStatement(sql, parameters)[1];
+			if (plot ~= nil) then
+				local sql = "SELECT plot_features FROM plots WHERE plot_id = ?";
+				local parameter = {plot[1]};
+				local explosions = ExecuteStatement(sql, parameter)[1][1];
+
+				if not (bit32.band(explosions, PLOTEXPLOSIONSINHERIT) == 0) then -- The plot inherit it's explosions property from the town
+					local sql = "SELECT town_features FROM towns WHERE town_id = ?";
+					local parameter = {plot[2]};
+					local explosions = ExecuteStatement(sql, parameter)[1][1];
+
+					if (bit32.band(explosions, TOWNEXPLOSIONSENABLED) == 0) then -- Explosions are disabled
+						return true;
+					end
+				elseif (bit32.band(explosions, PLOTEXPLOSIONSENABLED) == 0) then -- Explosions are disabled
+					return true;
+				end
+
+				-- If here, explosions are enabled
+				return false;
+			end
+			parameters[1] = parameters[1] - a; --reset chunks
+			parameters[2] = parameters[2] - b;
+		end
+	end
+end
+
+function OnTakeDamage(Receiver, TDI)
+	if Receiver:IsPlayer() and TDI.Attacker ~= nil and TDI.Attacker:IsPlayer() then
+		local sql = "SELECT plot_id, town_id FROM plots WHERE chunkX = ? AND chunkZ = ? AND world = ?";
+
+		local parameters_attacker = {TDI.Attacker:GetChunkX(), TDI.Attacker:GetChunkZ(), TDI.Attacker:GetWorld():GetName()};
+		local parameters_receiver = {Receiver:GetChunkX(), Receiver:GetChunkZ(), Receiver:GetWorld():GetName()};
+
+		local town_attacker = ExecuteStatement(sql, parameters_attacker)[1];
+		local town_receiver = ExecuteStatement(sql, parameters_receiver)[1];
+
+		if (town_attacker ~= nil) or (town_receiver ~= nil) then
+			if (town_attacker == nil) and not (town_receiver == nil) then
+				town_attacker = {town_receiver}; --Set it so we can use it in the query
+			end
+
+			local sql = "SELECT plot_features FROM plots WHERE plot_id = ?";
+			local parameter = {town_attacker[1]};
+			local pvp = ExecuteStatement(sql, parameter)[1][1];
+
+			if not (bit32.band(pvp, PLOTPVPINHERIT) == 0) then -- The plot inherits it's pvp property from the town
+				local sql = "SELECT town_features FROM towns WHERE town_id = ?";
+				local parameter = {town_attacker[2]};
+				local pvp = ExecuteStatement(sql, parameter)[1][1];
+
+				if (bit32.band(pvp, TOWNPVPENABLED) == 0) then --PVP is disabled by the town
+					return true;
+				end
+			elseif (bit32.band(pvp, PLOTPVPENABLED) == 0) then -- PVP is disabled
+				return true;
+			end
+		end
+	end
+
+	return false;
+end
+
+function OnSpawningMonster(World, Monster)
+	if (Monster:GetMobFamily() == 0) then --Check if the monster is hostile
+		local sql = "SELECT plots.plot_features, towns.town_features FROM towns INNER JOIN plots ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
+		local parameters = {Monster:GetChunkX(), Monster:GetChunkZ(), World:GetName()};
+		local town = ExecuteStatement(sql, parameters)[1];
+
+		if (town) then -- Check if the mob is in a plot
+			if not (bit32.band(town[1], PLOTMOBSINHERIT) == 0) then -- The plot inherits it's mob spawning property from the town
+				if (bit32.band(town[2], TOWNMOBSENABLED) == 0) then -- Mob spawning is not allowed by the town
+					return true;
+				end
+			elseif (bit32.band(town[1], PLOTMOBSENABLED) == 0) then -- Mob spawning is not allowed
+				return true;
+			end
 		end
 	end
 
