@@ -1,15 +1,23 @@
 InTown = {}
 function CheckPlayerInTown(Player, chunkX, chunkZ)
-    local sql = "SELECT towns.town_name, plots.chunkX, plots.chunkZ, plots.world FROM plots LEFT JOIN towns ON towns.town_id = plots.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
+    local sql = "SELECT towns.town_name, nations.nation_name FROM plots LEFT JOIN towns ON towns.town_id = plots.town_id LEFT JOIN nations ON nations.nation_id = towns.town_id WHERE plots.chunkX = ? AND plots.chunkZ = ? AND plots.world = ?";
     local parameters = {chunkX, chunkZ, Player:GetWorld():GetName()};
     local result = ExecuteStatement(sql, parameters)[1];
     local town = InTown[Player:GetUUID()];
 
+	local PlayerClientHandle = Player:GetClientHandle();
+
     if (result) and (result[1]) and (not (town) or not (town == result[1])) then
-        Player:SendMessage("You're in the town " .. result[1]);
+		PlayerClientHandle:SendSetTitle(cCompositeChat():AddTextPart("Welcome to " .. result[1]));
+
+		if (result[2]) then
+			PlayerClientHandle:SendSetSubTitle(cCompositeChat():AddTextPart("Part of " .. result[2]));
+		end
+		PlayerClientHandle:SendTitleTimes(5, 25, 5);
         InTown[Player:GetUUID()] = result[1];
     elseif not (result) and (town) then
-        Player:SendMessage("You have left the town "..town..".");
+		PlayerClientHandle:SendSetTitle(cCompositeChat():AddTextPart(town .. " says farewell"));
+		PlayerClientHandle:SendTitleTimes(5, 25, 5);
         InTown[Player:GetUUID()] = nil;
     end
 end
