@@ -8,15 +8,15 @@ function CheckPlayerInTown(Player, chunkX, chunkZ)
 	local PlayerClientHandle = Player:GetClientHandle();
 
     if (result) and (result[1]) and (not (town) or not (town == result[1])) then
-		PlayerClientHandle:SendSetTitle(cCompositeChat():AddTextPart("Welcome to " .. result[1]));
+		PlayerClientHandle:SendSetTitle(cCompositeChat():AddTextPart("Welcome to "):AddTextPart(result[1], "@a"));
 
 		if (result[2]) then
-			PlayerClientHandle:SendSetSubTitle(cCompositeChat():AddTextPart("Part of " .. result[2]));
+			PlayerClientHandle:SendSetSubTitle(cCompositeChat():AddTextPart("Part of "):AddTextPart(result[2], "@6"));
 		end
 		PlayerClientHandle:SendTitleTimes(5, 25, 5);
         InTown[Player:GetUUID()] = result[1];
     elseif not (result) and (town) then
-		PlayerClientHandle:SendSetTitle(cCompositeChat():AddTextPart(town .. " says farewell"));
+		PlayerClientHandle:SendSetTitle(cCompositeChat():AddTextPart(town, "@a"):AddTextPart(" says farewell"));
 		PlayerClientHandle:SendTitleTimes(5, 25, 5);
         InTown[Player:GetUUID()] = nil;
     end
