@@ -91,6 +91,18 @@ function PlotToggle(Split, Player)
 				PERMISSION = PLOTMOBSENABLED;
 				INHERIT = PLOTMOBSINHERIT;
 				string = "Mob spawning";
+			elseif (Split[3] == 'explosions') then
+				PERMISSION = PLOTEXPLOSIONSENABLED;
+				INHERIT = PLOTEXPLOSIONSINHERIT;
+				string = "Explosions";
+			elseif (Split[3] == 'pvp') then
+				PERMISSION = PLOTPVPENABLED;
+				INHERIT = PLOTPVPINHERIT;
+				string = "PVP";
+			elseif (Split[3] == 'fire') then
+				PERMISSION = PLOTFIREENABLED;
+				INHERIT = PLOTFIREINHERIT;
+				string = "Fire";
 			end
 
 			if not (Split[4] == nil) then --The user wants the plot to inherit the town value

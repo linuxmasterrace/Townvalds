@@ -253,6 +253,24 @@ g_PluginInfo =
 							Handler = PlotToggle,
 							HelpString = "Toggles mob spawning in the current plot",
 							Permission = "townvalds.plot.toggle"
+						},
+						explosions =
+						{
+							Handler = PlotToggle,
+							HelpString = "Toggles explosions in the current plot",
+							Permission = "townvalds.plot.toggle"
+						},
+						pvp =
+						{
+							Handler = PlotToggle,
+							HelpString = "Toggles PVP in the current plot",
+							Permission = "townvalds.plot.toggle"
+						},
+						fire =
+						{
+							Handler = PlotToggle,
+							HelpString = "Toggles fire in the current plot",
+							Permission = "townvalds.plot.toggle"
 						}
 					}
 				}
