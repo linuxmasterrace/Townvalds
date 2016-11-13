@@ -284,7 +284,7 @@ g_PluginInfo =
 		},
 		["/switchchat"] =
 		{
-			Alias = {"/sc", "/gc", "/nc", "/tc", "/lc"},
+			Alias = {"/sc", "/gc", "/nc", "/tc", "/lc", "/mc", "/ac"},
 			Handler = SwitchChat,
 			HelpString = "Switches the active chat channel for the user",
 			Permission = "townvalds.chat.switch",
@@ -469,6 +469,16 @@ g_PluginInfo =
 		["townvalds.chat.switch"] =
 		{
 			Description = "Allows the player to switch between chat channels",
+			RecommendedGroups = "default",
+		},
+		["townvalds.chat.moderator"] =
+		{
+			Description = "Allows the player to talk in the moderator channel",
+			RecommendedGroups = "default",
+		},
+		["townvalds.chat.admin"] =
+		{
+			Description = "Allows the player to talk in the admin channel",
 			RecommendedGroups = "default",
 		},
 	},
