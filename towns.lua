@@ -27,8 +27,8 @@ function TownCreate(Split, Player)
 			if (remote_town[1]) then --There is already a town close-by
 				Player:SendMessageFailure("You're too close to an existing town, please move further away before trying to create a new town.");
 			else -- Insert the town data in the database
-				local sql = "INSERT INTO towns (town_name, town_explosions_enabled, town_pvp_enabled, town_spawnX, town_spawnY, town_spawnZ, town_spawnWorld) VALUES (?, ?, ?, ?, ? ,?, ?)";
-				local parameters = {Split[3], 0, 0, math.floor(Player:GetPosX()), math.floor(Player:GetPosY()), math.floor(Player:GetPosZ()), Player:GetWorld():GetName()};
+			        local sql = "INSERT INTO towns (town_name, town_spawnX, town_spawnY, town_spawnZ, town_spawnWorld) VALUES (?, ?, ?, ?, ?)";
+				local parameters = {Split[3], math.floor(Player:GetPosX()), math.floor(Player:GetPosY()), math.floor(Player:GetPosZ()), Player:GetWorld():GetName()};
 				local townId = ExecuteStatement(sql, parameters);
 
 				local sql = "INSERT INTO plots (town_id, chunkX, chunkZ, world) VALUES (?, ?, ?, ?)";
